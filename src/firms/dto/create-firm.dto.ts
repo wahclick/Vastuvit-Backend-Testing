@@ -12,5 +12,5 @@ export class CreateFirmDto {
         country: string
     };
     logo?:string;
-    ownerId: Types.ObjectId
+    user_id: Types.ObjectId
 }

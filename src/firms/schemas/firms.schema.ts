@@ -1,6 +1,6 @@
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
-import { Schema as MongooseSchema } from 'mongoose';
-export type FirmsDocument = Firms & Document;
+import { Document, Schema as MongooseSchema, Types } from 'mongoose';
+export type FirmsDocument = Firms & Document & { _id: Types.ObjectId }; 
 @Schema({ timestamps: true })
 export class Firms {
     @Prop({ required: true, maxlength: 20 })
@@ -21,7 +21,7 @@ export class Firms {
     logo: string;
 
     @Prop({ type: MongooseSchema.Types.ObjectId, ref: 'TopManagement', required: true })
-    ownerId: MongooseSchema.Types.ObjectId;
+    user_id: MongooseSchema.Types.ObjectId;
 
     @Prop({ default: true })
     isActive: boolean
@@ -37,4 +37,4 @@ export class Firms {
     subscriptionEndDate: Date;
 }
 
-export const FirmSchema = SchemaFactory.createForClass(Firm);
+export const FirmsSchema = SchemaFactory.createForClass(Firms);

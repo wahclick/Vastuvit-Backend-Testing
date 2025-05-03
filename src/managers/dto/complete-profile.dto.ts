@@ -1,3 +1,5 @@
+import { Types } from "mongoose";
+
 export class CompleteProfileDto {
     mobile: string; // Used to find the manager
     name: string;
@@ -14,7 +16,9 @@ export class CompleteProfileDto {
         state: string;
         country: string;
       };
-      numberOfEmployees: string;
+      numberOfEmployees?: string;
       logo?: string;
+      user_id: Types.ObjectId;
+         
     };
   }

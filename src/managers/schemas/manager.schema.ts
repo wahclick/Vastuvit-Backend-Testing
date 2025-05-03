@@ -11,13 +11,13 @@ export class Manager {
   @Prop({ required: true, unique: true, match: /^[0-9]{10}$/ })
   mobile: string;
   
-  @Prop({ required: true})
+  @Prop({})
   name: string;
   
-  @Prop({ required: true})
+  @Prop({})
   password: string;
   
-  @Prop({ required: true})
+  @Prop({})
   address: string;
   
   @Prop()
