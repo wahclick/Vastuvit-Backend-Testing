@@ -1,4 +1,4 @@
 export class CreateManagerDto {
-    email: string;
-    mobile: string;
-  }
+  email: string;
+  mobile: string;
+}

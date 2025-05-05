@@ -8,20 +8,27 @@ export class ManagersController {
   constructor(private readonly managersService: ManagersService) {}
 
   @Post('signup')
-  async signup(@Body() createManagerDto: CreateManagerDto): Promise<{ message: string }> {
+  async signup(
+    @Body() createManagerDto: CreateManagerDto,
+  ): Promise<{ message: string }> {
+ 
     await this.managersService.create(createManagerDto);
     return { message: 'Manager registered successfully' };
   }
 
   @Put('complete-profile')
-  async completeProfile(@Body() completeProfileDto: CompleteProfileDto): Promise<{ message: string; firmId: string }> {
-    const firmId = await this.managersService.completeProfile(completeProfileDto);
-    return { 
+  async completeProfile(
+    @Body() completeProfileDto: CompleteProfileDto,
+  ): Promise<{ message: string; firmId: string }> {
+
+    const firmId =
+      await this.managersService.completeProfile(completeProfileDto);
+    return {
       message: 'Profile completed successfully',
-      firmId: firmId
+      firmId: firmId,
     };
   }
-  
+
   @Get(':id/firms')
   async getManagerFirms(@Param('id') id: string) {
     const manager = await this.managersService.getFirmsByManagerId(id);
