@@ -7,10 +7,11 @@ import { FirmsModule } from 'src/firms/firms.module';
 
 @Module({
   imports: [
-    MongooseModule.forFeature([{name: Manager.name, schema: ManagerSchema}]),
-    FirmsModule
+    MongooseModule.forFeature([{ name: Manager.name, schema: ManagerSchema }]),
+    FirmsModule,
   ],
   providers: [ManagersService],
-  controllers: [ManagersController]
+  controllers: [ManagersController],
+  exports: [ManagersService],
 })
 export class ManagersModule {}
