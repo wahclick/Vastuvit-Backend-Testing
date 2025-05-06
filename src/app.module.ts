@@ -6,6 +6,9 @@ import { AppService } from './app.service';
 import { ManagersModule } from './managers/managers.module';
 import { FirmsModule } from './firms/firms.module';
 import { AuthModule } from './auth/auth.module';
+import { RanksModule } from './ranks/ranks.module';
+import { DesignationsModule } from './designations/designations.module';
+import { CrewModule } from './crew/crew.module';
 
 @Module({
   imports: [
@@ -27,6 +30,9 @@ import { AuthModule } from './auth/auth.module';
     ManagersModule,
     FirmsModule,
     AuthModule,
+    RanksModule,
+    DesignationsModule,
+    CrewModule,
   ],
 
   controllers: [AppController],

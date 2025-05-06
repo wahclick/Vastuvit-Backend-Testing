@@ -15,6 +15,10 @@ import { CreateManagerDto } from './dto/create-manager.dto';
 import { CompleteProfileDto } from './dto/complete-profile.dto';
 import { FirmsDocument } from 'src/firms/schemas/firms.schema';
 import * as bcrypt from 'bcrypt'; // or bcryptjs
+import { RanksService } from 'src/ranks/ranks.service';
+import { DesignationsService } from 'src/designations/designations.service';
+import * as fs from 'fs';
+import * as path from 'path';
 
 @Injectable()
 export class ManagersService {
@@ -22,6 +26,8 @@ export class ManagersService {
     // Inject the Manager model using @InjectModel
     @InjectModel(Manager.name) private managerModel: Model<ManagerDocument>,
     private readonly firmsService: FirmsService,
+    private readonly ranksService: RanksService,
+    private readonly designationsService: DesignationsService,
   ) {}
 
   async create(createManagerDto: CreateManagerDto): Promise<ManagerDocument> {
@@ -141,6 +147,8 @@ export class ManagersService {
         },
       );
 
+      await this.importDefaultRanksAndDesignations(firm._id);
+
       return firm._id.toString();
     } catch (error) {
       console.error('Complete profile error:', error);
@@ -162,7 +170,7 @@ export class ManagersService {
     // Populate the ownedFirms to get firm details
     return this.managerModel.findById(managerId).populate('ownedFirms').exec();
   }
-  
+
   private async hashPassword(password: string): Promise<string> {
     const saltRounds = 10;
     try {
@@ -171,6 +179,66 @@ export class ManagersService {
     } catch (error) {
       console.error('Error hashing password:', error);
       throw new InternalServerErrorException('Error hashing password');
+    }
+  }
+
+  private async importDefaultRanksAndDesignations(
+    firmId: Types.ObjectId,
+  ): Promise<void> {
+    try {
+      const dataFilePath = path.resolve(
+        process.cwd(),
+        'src/data/designations-data.json',
+      );
+      console.log('Attempting to read file from:', dataFilePath);
+
+      // Check if file exists before trying to read it
+      if (!fs.existsSync(dataFilePath)) {
+        console.error(`File not found at path: ${dataFilePath}`);
+        return;
+      }
+
+      const fileData = fs.readFileSync(dataFilePath, 'utf8');
+      const designationsData = JSON.parse(fileData);
+      const now = new Date();
+      const rankMappings = {};
+      for (const rankCategory of Object.keys(designationsData)) {
+        const rank = await this.ranksService.create({
+          name: rankCategory,
+          isEnabled: true,
+          firmId: firmId,
+        });
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+        rankMappings[rankCategory] = rank._id;
+        console.log(`Created rank: ${rankCategory} for firm: ${firmId}`);
+      }
+
+      for (const [rankCategory, designations] of Object.entries(
+        designationsData,
+      )) {
+        const rankId = rankMappings[rankCategory];
+
+        for (const designation of designations as any[]) {
+          await this.designationsService.create({
+            label: designation.label,
+            value: designation.value,
+            rankId: rankId,
+            firmId: firmId,
+            isEnabled: true,
+          });
+        }
+        console.log(
+          `Created ${(designations as any[]).length} designations for rank: ${rankCategory}`,
+        );
+      }
+
+      console.log(
+        `Default ranks and designations imported for firm: ${firmId}`,
+      );
+    } catch (error) {
+      console.error('Error importing default ranks and designations:', error);
+      // We don't throw the error here to avoid breaking the profile completion process
+      // But we log it for debugging purposes
     }
   }
 }
