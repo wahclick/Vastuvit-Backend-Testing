@@ -9,6 +9,8 @@ import { AuthModule } from './auth/auth.module';
 import { RanksModule } from './ranks/ranks.module';
 import { DesignationsModule } from './designations/designations.module';
 import { CrewModule } from './crew/crew.module';
+import { ClientsModule } from './clients/clients.module';
+import { ProjectsModule } from './projects/projects.module';
 
 @Module({
   imports: [
@@ -33,6 +35,8 @@ import { CrewModule } from './crew/crew.module';
     RanksModule,
     DesignationsModule,
     CrewModule,
+    ClientsModule,
+    ProjectsModule,
   ],
 
   controllers: [AppController],
