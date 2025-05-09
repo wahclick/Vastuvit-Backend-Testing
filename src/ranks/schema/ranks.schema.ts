@@ -10,7 +10,7 @@ export class Rank {
   @Prop({ required: true })
   name: string;
 
-  @Prop({ type: MongooseSchema.Types.ObjectId, ref: 'Firm', required: true })
+  @Prop({ type: MongooseSchema.Types.ObjectId, ref: 'Firms', required: true })
   firmId: Types.ObjectId;
 
   @Prop({ default: true })

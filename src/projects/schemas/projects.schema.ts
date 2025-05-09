@@ -1,6 +1,7 @@
 // project.schema.ts
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document, Schema as MongooseSchema, Types } from 'mongoose';
+import { ProjectStatus } from './project-status.enum';
 
 // Measurement schema as a nested document
 class MeasurementMetric {
@@ -90,7 +91,7 @@ export class Project {
   @Prop({ type: MongooseSchema.Types.ObjectId, ref: 'Manager', required: true })
   userId: Types.ObjectId;
 
-  @Prop({ type: MongooseSchema.Types.ObjectId, ref: 'Firm', required: true })
+  @Prop({ type: MongooseSchema.Types.ObjectId, ref: 'Firms', required: true })
   firmId: Types.ObjectId;
 
   @Prop({ type: MongooseSchema.Types.ObjectId, ref: 'Client', required: true })
@@ -98,6 +99,13 @@ export class Project {
 
   @Prop({ type: String, required: true })
   name: string;
+
+  @Prop({
+    type: String,
+    enum: Object.values(ProjectStatus),
+    default: ProjectStatus.TO_START,
+  })
+  status: ProjectStatus;
 
   @Prop({ type: Boolean, default: false })
   vastuCompliant: boolean;

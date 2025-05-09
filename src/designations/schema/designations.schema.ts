@@ -15,7 +15,7 @@ export class Designation {
   @Prop({ type: MongooseSchema.Types.ObjectId, ref: 'Rank', required: true })
   rankId: Types.ObjectId;
 
-  @Prop({ type: MongooseSchema.Types.ObjectId, ref: 'Firm', required: true })
+  @Prop({ type: MongooseSchema.Types.ObjectId, ref: 'Firms', required: true })
   firmId: Types.ObjectId;
 
   @Prop({ default: true, type: Boolean })

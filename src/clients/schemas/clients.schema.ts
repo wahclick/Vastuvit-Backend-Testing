@@ -6,7 +6,11 @@ export type ClientDocument = Client & Document;
 
 @Schema({ timestamps: true })
 export class Client {
-  @Prop({ type: MongooseSchema.Types.ObjectId, ref: 'Manager', required: true })
+  @Prop({
+    type: MongooseSchema.Types.ObjectId,
+    ref: 'Manager',
+    required: true,
+  })
   userId: Types.ObjectId;
 
   @Prop({ required: true, type: String })
@@ -27,7 +31,7 @@ export class Client {
   @Prop({ type: String, required: true })
   country: string;
 
-  @Prop({ type: String, required: true })
+  @Prop({ type: String,  })
   email: string;
 
   @Prop({ type: String, required: true })
@@ -54,7 +58,7 @@ export class Client {
   @Prop({ type: String })
   specificClientRequest: string;
 
-  @Prop({ type: MongooseSchema.Types.ObjectId, ref: 'Firm', required: true })
+  @Prop({ type: MongooseSchema.Types.ObjectId, ref: 'Firms', required: true })
   firmId: Types.ObjectId;
 
   @Prop({ type: Boolean, default: true })

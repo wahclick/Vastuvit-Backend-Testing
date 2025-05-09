@@ -13,11 +13,21 @@ export class AuthController {
       loginDto.password,
     );
 
-    // Step 2: If the user is valid, generate a JWT token
+    // If the user is not valid, throw an exception
+
     if (!user) {
       throw new UnauthorizedException('Invalid credentials');
     }
 
-    return 200; // Return the JWT token
+    // Return a proper response object
+    return {
+      statusCode: 200,
+      message: 'Login successful',
+      user: {
+        id: user._id,
+        mobile: user.mobile,
+        name: user.name,
+      },
+    };
   }
 }

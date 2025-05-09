@@ -1,4 +1,3 @@
-// create-crew.dto.ts
 import {
   IsString,
   IsNotEmpty,
@@ -7,6 +6,7 @@ import {
   IsNumber,
   IsEmail,
   IsDateString,
+  IsBoolean,
 } from '@nestjs/class-validator';
 import { Types } from 'mongoose';
 
@@ -54,7 +54,16 @@ export class CreateCrewDto {
   @IsEmail()
   @IsNotEmpty()
   email: string;
+  
+  @IsString()
+  @IsNotEmpty()
+  name: string;
+  
+  @IsString()
+  @IsOptional()
+  password?: string;
 
+  @IsBoolean()
   @IsOptional()
   isEnabled?: boolean = true;
 }

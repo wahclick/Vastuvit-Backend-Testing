@@ -10,9 +10,9 @@ import { ManagersModule } from 'src/managers/managers.module';
     MongooseModule.forFeature([{ name: Manager.name, schema: ManagerSchema }]),
     ManagersModule,
   ],
-  
-   
+
   providers: [AuthService],
   controllers: [AuthController],
+  exports: [AuthService],
 })
 export class AuthModule {}

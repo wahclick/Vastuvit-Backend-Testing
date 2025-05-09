@@ -15,7 +15,7 @@ export class Firms {
     country: string;
   };
 
-  @Prop({ required: true })
+  @Prop()
   logo: string;
 
   @Prop({

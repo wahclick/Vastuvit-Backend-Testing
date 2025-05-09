@@ -24,7 +24,7 @@ export class Manager {
   profileImage: string;
 
   // Array of firm IDs that this manager owns
-  @Prop({ type: [{ type: MongooseSchema.Types.ObjectId, ref: 'Firm' }] })
+  @Prop({ type: [{ type: MongooseSchema.Types.ObjectId, ref: 'Firms' }] })
   ownedFirms: MongooseSchema.Types.ObjectId[];
 
   @Prop({ default: false })

@@ -5,7 +5,7 @@ export type CrewDocument = Crew & Document;
 
 @Schema({ timestamps: true })
 export class Crew {
-  @Prop({ type: MongooseSchema.Types.ObjectId, required: true, ref: 'Firm' })
+  @Prop({ type: MongooseSchema.Types.ObjectId, required: true, ref: 'Firms' })
   firmId: Types.ObjectId;
 
   @Prop({ type: MongooseSchema.Types.ObjectId, required: true, ref: 'Manager' })
@@ -41,6 +41,12 @@ export class Crew {
 
   @Prop({ type: String, required: true })
   email: string;
+
+  @Prop({ type: String, required: true })
+  name: string;
+
+  @Prop({ type: Boolean, default: true })
+  isEnabled: boolean;
 }
 
 export const CrewSchema = SchemaFactory.createForClass(Crew);

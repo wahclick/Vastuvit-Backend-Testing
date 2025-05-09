@@ -6,6 +6,7 @@ import {
   IsEmail,
   IsDateString,
   IsBoolean,
+  IsNotEmpty
 } from '@nestjs/class-validator';
 import { Types } from 'mongoose';
 
@@ -49,6 +50,10 @@ export class UpdateCrewDto {
   @IsString()
   @IsOptional()
   profileImage?: string;
+
+  @IsString()
+  @IsNotEmpty()
+  name: string;
 
   @IsEmail()
   @IsOptional()

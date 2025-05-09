@@ -10,9 +10,11 @@ import {
   IsArray,
   ValidateNested,
   IsObject,
+  IsEnum,
 } from '@nestjs/class-validator';
 import { Type } from 'class-transformer';
 import { Types } from 'mongoose';
+import { ProjectStatus } from '../schemas/project-status.enum';
 
 class MeasurementMetricDto {
   @IsNumber()
@@ -128,6 +130,10 @@ export class CreateProjectDto {
   @IsString()
   @IsNotEmpty()
   name: string;
+
+  @IsEnum(ProjectStatus)
+  @IsOptional()
+  status?: ProjectStatus = ProjectStatus.TO_START;
 
   @IsBoolean()
   @IsOptional()

@@ -11,6 +11,7 @@ import { DesignationsModule } from './designations/designations.module';
 import { CrewModule } from './crew/crew.module';
 import { ClientsModule } from './clients/clients.module';
 import { ProjectsModule } from './projects/projects.module';
+import { TasksModule } from './tasks/tasks.module';
 
 @Module({
   imports: [
@@ -37,6 +38,7 @@ import { ProjectsModule } from './projects/projects.module';
     CrewModule,
     ClientsModule,
     ProjectsModule,
+    TasksModule,
   ],
 
   controllers: [AppController],

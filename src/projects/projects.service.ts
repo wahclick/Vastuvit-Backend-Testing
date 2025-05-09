@@ -20,6 +20,7 @@ export class ProjectsService {
   async create(createProjectDto: CreateProjectDto): Promise<Project> {
     try {
       // Generate project code if not provided
+      console.log(createProjectDto)
       if (!createProjectDto.projectCode) {
         createProjectDto.projectCode = await this.generateProjectCode(
           createProjectDto.firmId.toString(),

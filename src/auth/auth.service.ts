@@ -10,8 +10,14 @@ export class AuthService {
     const manager = await this.managerService.findByMobile(mobile);
 
     if (!manager) return null;
+
     const isPasswordValid = await bcrypt.compare(password, manager.password);
-    if (isPasswordValid) return manager;
-    return 'Invalid Password';
+
+
+    if (isPasswordValid) {
+      return manager;
+    }
+
+    return null; // Return null for both "user not found" and "invalid password" cases
   }
 }
