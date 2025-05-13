@@ -1,52 +1,63 @@
+// schema/crew.schema.ts
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { Document, Schema as MongooseSchema, Types } from 'mongoose';
+import { Document, Schema as MongooseSchema } from 'mongoose';
 
 export type CrewDocument = Crew & Document;
 
 @Schema({ timestamps: true })
 export class Crew {
-  @Prop({ type: MongooseSchema.Types.ObjectId, required: true, ref: 'Firms' })
-  firmId: Types.ObjectId;
+  @Prop({ required: true, type: MongooseSchema.Types.ObjectId, ref: 'Firm' })
+  firmId: MongooseSchema.Types.ObjectId;
 
-  @Prop({ type: MongooseSchema.Types.ObjectId, required: true, ref: 'Manager' })
-  userId: Types.ObjectId;
+  @Prop({ required: true, type: MongooseSchema.Types.ObjectId, ref: 'User' })
+  userId: MongooseSchema.Types.ObjectId;
 
-  @Prop({ type: MongooseSchema.Types.ObjectId, ref: 'Rank', required: true })
-  rankId: Types.ObjectId;
+  @Prop({ required: true, type: MongooseSchema.Types.ObjectId, ref: 'Rank' })
+  rankId: MongooseSchema.Types.ObjectId;
 
-  @Prop({
-    type: MongooseSchema.Types.ObjectId,
-    ref: 'Designation',
-    required: true,
-  })
-  designationId: Types.ObjectId;
+  @Prop({ required: true, type: MongooseSchema.Types.ObjectId, ref: 'Designation' })
+  designationId: MongooseSchema.Types.ObjectId;
 
-  @Prop({ type: Number, required: true })
-  salary: number;
-
-  @Prop({ type: Date, required: true })
-  dateOfJoining: Date;
-
-  @Prop({ type: Date })
-  dateOfAnniversary: Date;
-
-  @Prop({ type: String, required: true })
-  telephone: string;
-
-  @Prop({ type: String })
-  additionalNumber: string;
-
-  @Prop({ type: String })
-  profileImage: string;
-
-  @Prop({ type: String, required: true })
-  email: string;
-
-  @Prop({ type: String, required: true })
+  @Prop({ required: true })
   name: string;
 
-  @Prop({ type: Boolean, default: true })
+  @Prop({ required: true })
+  email: string;
+
+  // Add emp_id field
+  @Prop({ required: true, unique: true })
+  emp_id: string;
+
+  // Add password field
+  @Prop({ required: true })
+  password: string;
+
+  @Prop({ required: true })
+  salary: number;
+
+  @Prop({ required: true })
+  dateOfJoining: Date;
+
+  @Prop()
+  dateOfAnniversary: Date;
+
+  @Prop({ required: true })
+  telephone: string;
+
+  @Prop()
+  additionalNumber: string;
+
+  @Prop()
+  profileImage: string;
+
+  @Prop({ default: true })
   isEnabled: boolean;
+
+  @Prop()
+  createdAt: Date;
+
+  @Prop()
+  updatedAt: Date;
 }
 
 export const CrewSchema = SchemaFactory.createForClass(Crew);

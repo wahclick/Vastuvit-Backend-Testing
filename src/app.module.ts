@@ -12,6 +12,7 @@ import { CrewModule } from './crew/crew.module';
 import { ClientsModule } from './clients/clients.module';
 import { ProjectsModule } from './projects/projects.module';
 import { TasksModule } from './tasks/tasks.module';
+import { MemosModule } from './memos/memos.module';
 
 @Module({
   imports: [
@@ -39,6 +40,7 @@ import { TasksModule } from './tasks/tasks.module';
     ClientsModule,
     ProjectsModule,
     TasksModule,
+    MemosModule,
   ],
 
   controllers: [AppController],
