@@ -16,7 +16,10 @@ async function bootstrap() {
   connection.on('error', (err) => {
     console.error('Error connecting to MongoDB Atlas:', err);
   });
-  app.enableCors();
+  app.enableCors({
+    origin: '*',
+    methods: ['GET', 'HEAD', 'POST', 'PATCH', 'PUT', 'DELETE', 'OPTION'],
+  });
 
   await app.listen(3000);
   console.log('Application is running on: http://localhost:3000');
