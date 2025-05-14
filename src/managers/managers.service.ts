@@ -171,6 +171,24 @@ export class ManagersService {
     return this.managerModel.findById(managerId).populate('ownedFirms').exec();
   }
 
+  async findAllByFirmId(firmId: string): Promise<ManagerDocument[]> {
+    try {
+      // Find all managers who have this firm in their ownedFirms array
+      const managers = await this.managerModel
+        .find({
+          ownedFirms: { $in: [new Types.ObjectId(firmId)] },
+        })
+        .exec();
+
+      return managers;
+    } catch (error) {
+      console.error('Error finding managers by firmId:', error);
+      throw new InternalServerErrorException(
+        'Failed to retrieve managers for firm: ' + error.message,
+      );
+    }
+  }
+
   private async hashPassword(password: string): Promise<string> {
     const saltRounds = 10;
     try {

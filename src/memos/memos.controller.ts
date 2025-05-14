@@ -18,12 +18,12 @@ import { Types } from 'mongoose';
 export class MemosController {
   constructor(private readonly memosService: MemosService) {}
 
-  @Post()
+  @Post('createMemo')
   createMemo(@Body() createMemoDto: CreateMemoDto) {
     return this.memosService.createMemo(createMemoDto); // Updated
   }
 
-  @Get()
+  @Get('getAllMemos')
   getAllMemos(@Query('firmId') firmId: string) {
     return this.memosService.getAllMemosByFirm(new Types.ObjectId(firmId)); // Updated
   }

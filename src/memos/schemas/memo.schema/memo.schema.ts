@@ -6,7 +6,7 @@ export type MemoDocument = Memo & Document;
 
 @Schema({ timestamps: true })
 export class Memo {
-  @Prop({ required: true, type: MongooseSchema.Types.ObjectId, ref: 'User' })
+  @Prop({ required: true, type: MongooseSchema.Types.ObjectId, ref: 'Manager' })
   userId: MongooseSchema.Types.ObjectId;
 
   @Prop({ required: true, type: MongooseSchema.Types.ObjectId, ref: 'Firm' })

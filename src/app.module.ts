@@ -13,6 +13,8 @@ import { ClientsModule } from './clients/clients.module';
 import { ProjectsModule } from './projects/projects.module';
 import { TasksModule } from './tasks/tasks.module';
 import { MemosModule } from './memos/memos.module';
+import { LeaveModule } from './leaves/leaves.module';
+
 
 @Module({
   imports: [
@@ -41,6 +43,7 @@ import { MemosModule } from './memos/memos.module';
     ProjectsModule,
     TasksModule,
     MemosModule,
+    LeaveModule,
   ],
 
   controllers: [AppController],

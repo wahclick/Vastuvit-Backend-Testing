@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Post, Put } from '@nestjs/common';
+import { Body, Controller, Get, Param, Post, Put, Query } from '@nestjs/common';
 import { ManagersService } from './managers.service';
 import { CreateManagerDto } from './dto/create-manager.dto';
 import { CompleteProfileDto } from './dto/complete-profile.dto';
@@ -11,7 +11,6 @@ export class ManagersController {
   async signup(
     @Body() createManagerDto: CreateManagerDto,
   ): Promise<{ message: string }> {
- 
     await this.managersService.create(createManagerDto);
     return { message: 'Manager registered successfully' };
   }
@@ -20,7 +19,6 @@ export class ManagersController {
   async completeProfile(
     @Body() completeProfileDto: CompleteProfileDto,
   ): Promise<{ message: string; firmId: string }> {
-
     const firmId =
       await this.managersService.completeProfile(completeProfileDto);
     return {
@@ -37,5 +35,10 @@ export class ManagersController {
       name: manager.name,
       firms: manager.ownedFirms,
     };
+  }
+
+  @Get('')
+  async getManagersByFirmId(@Query('firmId') firmId: string) {
+    return this.managersService.findAllByFirmId(firmId);
   }
 }
