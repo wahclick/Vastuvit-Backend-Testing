@@ -9,6 +9,8 @@ import {
 } from '@nestjs/class-validator';
 import { Types } from 'mongoose';
 
+
+
 export class CreateTaskDto {
   @IsMongoId()
   @IsNotEmpty()
@@ -65,4 +67,8 @@ export class CreateTaskDto {
   @IsEnum(['approved', 'rejected', 'pending'])
   @IsOptional()
   remarkStatus?: string = 'pending';
+
+  @IsString()
+  @IsOptional()
+  metadata?: string; // JSON string for additional fields
 }

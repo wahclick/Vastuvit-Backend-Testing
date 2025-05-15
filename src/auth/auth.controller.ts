@@ -19,14 +19,20 @@ export class AuthController {
       throw new UnauthorizedException('Invalid credentials');
     }
 
+
     // Return a proper response object
+    const userData = JSON.parse(JSON.stringify(user));
+
     return {
       statusCode: 200,
       message: 'Login successful',
       user: {
-        id: user._id,
-        mobile: user.mobile,
-        name: user.name,
+        id: userData._doc._id, // Include both formats to be safe
+        name: userData._doc.name,
+        mobile: userData._doc.mobile,
+        email: userData._doc.email,
+        role: userData._doc.role,
+        // Add other fields you need, but avoid sending password
       },
     };
   }

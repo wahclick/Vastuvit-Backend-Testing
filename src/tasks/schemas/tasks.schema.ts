@@ -1,4 +1,4 @@
-// task.schema.ts
+// MODIFIED: tasks.schema.ts in NestJS backend to support metadata
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document, Schema as MongooseSchema, Types } from 'mongoose';
 
@@ -6,55 +6,53 @@ export type TaskDocument = Task & Document;
 
 @Schema({ timestamps: true })
 export class Task {
-  @Prop({ type: MongooseSchema.Types.ObjectId, ref: 'Manager', required: true })
+  @Prop({ type: MongooseSchema.Types.ObjectId, ref: 'User', required: true })
   userId: Types.ObjectId;
 
-  @Prop({ type: MongooseSchema.Types.ObjectId, ref: 'Firms', required: true })
+  @Prop({ type: MongooseSchema.Types.ObjectId, ref: 'Firm', required: true })
   firmId: Types.ObjectId;
 
   @Prop({ type: MongooseSchema.Types.ObjectId, ref: 'Project', required: true })
   projectId: Types.ObjectId;
 
-  @Prop({ type: String })
+  @Prop()
   assignerRemark: string;
 
-  @Prop({ type: String })
+  @Prop()
   timeTaken: string;
 
-  @Prop({ type: MongooseSchema.Types.ObjectId, ref: 'Crew' })
+  @Prop({ type: MongooseSchema.Types.ObjectId, ref: 'User' })
   assignTo: Types.ObjectId;
 
-  @Prop({ type: String, enum: ['low', 'medium', 'high'], default: 'medium' })
+  @Prop({ enum: ['low', 'medium', 'high'], default: 'medium' })
   priority: string;
 
-  @Prop({ type: Date, required: true })
+  @Prop({ required: true })
   startDate: Date;
 
-  @Prop({ type: Date, required: true })
+  @Prop({ required: true })
   endDate: Date;
 
-  @Prop({ type: String })
+  @Prop()
   remarks: string;
 
-  @Prop({ type: String })
-  timeLimit: string; // Format as HH:mm
+  @Prop()
+  timeLimit: string;
 
   @Prop({
-    type: String,
-
+    enum: ['pending', 'in-progress', 'completed', 'cancelled'],
     default: 'pending',
   })
   status: string;
 
-  @Prop({ type: MongooseSchema.Types.ObjectId, ref: 'Manager' })
+  @Prop({ type: MongooseSchema.Types.ObjectId, ref: 'User' })
   taskCheckBy: Types.ObjectId;
 
-  @Prop({
-    type: String,
-
-    default: 'pending',
-  })
+  @Prop({ enum: ['approved', 'rejected', 'pending'], default: 'pending' })
   remarkStatus: string;
+
+  @Prop()
+  metadata: string; // JSON string for additional fields
 }
 
 export const TaskSchema = SchemaFactory.createForClass(Task);

@@ -14,7 +14,7 @@ import {
 } from '@nestjs/class-validator';
 import { Type } from 'class-transformer';
 import { Types } from 'mongoose';
-import { ProjectStatus } from '../schemas/project-status.enum';
+import { ProjectStatus } from '../../schemas/project-status.enum';
 
 class MeasurementMetricDto {
   @IsNumber()

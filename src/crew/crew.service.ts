@@ -44,11 +44,10 @@ export class CrewService {
     }
   }
 
-
   async validateByEmpId(emp_id: string, password: string): Promise<any> {
     const crew = await this.crewModel.findOne({ emp_id });
     if (!crew) return null;
-    
+
     const isPasswordValid = await bcrypt.compare(password, crew.password);
     if (isPasswordValid) {
       // Return user without password
@@ -111,7 +110,7 @@ export class CrewService {
       );
 
       // Return the designation title (or label), fallback to 'DESIG' if not found
-      return  designation?.label || 'DESIG';
+      return designation?.label || 'DESIG';
     } catch (error) {
       console.error('Error getting designation title:', error);
       return 'DESIG'; // Fallback value
@@ -218,6 +217,60 @@ export class CrewService {
       console.error('Error finding crew members by firm and rank:', error);
       throw new InternalServerErrorException(
         'Failed to find crew members by firm and rank: ' + error.message,
+      );
+    }
+  }
+  async findByName(name: string, firmId: Types.ObjectId): Promise<Crew> {
+    try {
+      // First try exact match
+      let crew = await this.crewModel
+        .findOne({
+          name: name,
+          firmId: firmId,
+        })
+        .exec();
+
+      // If no exact match, try case-insensitive match
+      if (!crew) {
+        crew = await this.crewModel
+          .findOne({
+            name: { $regex: new RegExp(`^${name}$`, 'i') },
+            firmId: firmId,
+          })
+          .exec();
+      }
+
+      // If still no match, try search by email
+      if (!crew && name.includes('@')) {
+        crew = await this.crewModel
+          .findOne({
+            email: name,
+            firmId: firmId,
+          })
+          .exec();
+      }
+
+      // Try partial match (contains)
+      if (!crew) {
+        crew = await this.crewModel
+          .findOne({
+            name: { $regex: new RegExp(name, 'i') },
+            firmId: firmId,
+          })
+          .exec();
+      }
+
+      if (!crew) {
+        throw new NotFoundException(`Crew with name ${name} not found`);
+      }
+
+      return crew;
+    } catch (error) {
+      if (error instanceof NotFoundException) {
+        throw error;
+      }
+      throw new NotFoundException(
+        `Failed to find crew by name: ${error.message}`,
       );
     }
   }

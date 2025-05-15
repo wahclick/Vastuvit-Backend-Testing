@@ -1,6 +1,6 @@
 // project.schema.ts
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { Document, Schema as MongooseSchema, Types } from 'mongoose';
+import mongoose, { Document, Schema as MongooseSchema, Types } from 'mongoose';
 import { ProjectStatus } from './project-status.enum';
 
 // Measurement schema as a nested document
@@ -32,20 +32,30 @@ class MeasurementMetric {
 
 // Wing schema
 class Wing {
+  @Prop({ type: MongooseSchema.Types.ObjectId, auto: true })
+  _id: Types.ObjectId;
+
   @Prop({ type: String })
   block: string;
 
-  @Prop({ type: [String] })
-  wings: string[];
+  @Prop({
+    type: [{ type: MongooseSchema.Types.ObjectId, auto: true, _id: String }],
+  })
+  wings: { _id: Types.ObjectId; name: string }[];
 }
 
-// Cluster schema
+// Cluster schema with _id
 class Cluster {
+  @Prop({ type: MongooseSchema.Types.ObjectId, auto: true })
+  _id: Types.ObjectId;
+
   @Prop({ type: String })
   cluster: string;
 
-  @Prop({ type: [String] })
-  units: string[];
+  @Prop({
+    type: [{ type: MongooseSchema.Types.ObjectId, auto: true, _id: String }],
+  })
+  units: { _id: Types.ObjectId; name: string }[];
 }
 
 // Site Visit schema
@@ -74,14 +84,45 @@ class BillingStage {
   @Prop({ type: String })
   projectRemark: string;
 }
+class PropertyItem {
+  @Prop({ type: String, required: true })
+  key: string;
 
-// Project Details schema
-class ProjectDetails {
-  @Prop({ type: String })
-  drawingCategory: string;
+  @Prop({ type: mongoose.Schema.Types.Mixed, required: false, default: null })
+  value: any;
+}
+
+@Schema({ _id: true })
+export class ProjectDetails {
+  @Prop({ type: mongoose.Schema.Types.ObjectId, auto: true })
+  _id: mongoose.Types.ObjectId;
+
+  @Prop({ type: Boolean, default: false })
+  isGlobal: boolean;
+
+  @Prop({ type: mongoose.Schema.Types.ObjectId, required: false })
+  blockId?: mongoose.Types.ObjectId;
+
+  @Prop({ type: mongoose.Schema.Types.ObjectId, required: false })
+  wingId?: mongoose.Types.ObjectId;
+
+  @Prop({ type: mongoose.Schema.Types.ObjectId, required: false })
+  clusterId?: mongoose.Types.ObjectId;
+
+  @Prop({ type: mongoose.Schema.Types.ObjectId, required: false })
+  unitId?: mongoose.Types.ObjectId;
 
   @Prop({ type: String })
-  drawingType: string;
+  notes?: string;
+
+  @Prop({ type: [Object], default: [] })
+  properties: PropertyItem[];
+
+  @Prop({ type: Date, default: Date.now })
+  createdAt: Date;
+
+  @Prop({ type: Date, default: Date.now })
+  updatedAt: Date;
 }
 
 export type ProjectDocument = Project & Document;
@@ -167,8 +208,8 @@ export class Project {
   @Prop({ type: String, unique: true })
   projectCode: string;
 
-  @Prop({ type: Object })
-  details: ProjectDetails;
+  @Prop({ type: [ProjectDetails], default: [] })
+  projectDetails: ProjectDetails[];
 
   @Prop({ type: Boolean, default: true })
   isEnabled: boolean;

@@ -64,4 +64,8 @@ export class UpdateTaskDto {
   @IsEnum(['approved', 'rejected', 'pending'])
   @IsOptional()
   remarkStatus?: string;
+
+  @IsString()
+  @IsOptional()
+  metadata?: string; // JSON string for additional fields
 }
