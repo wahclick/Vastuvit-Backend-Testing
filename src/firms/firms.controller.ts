@@ -1,24 +1,34 @@
-import { Body, Controller, Get, Param, Post } from '@nestjs/common';
+import { Controller, Get, Post, Body, Param, Put } from '@nestjs/common';
 import { FirmsService } from './firms.service';
 import { CreateFirmDto } from './dto/create-firm.dto';
-import { Types } from 'mongoose';
+import { UpdateLeaveSettingDto } from './dto/update-leave-seettings.dto';
 
 @Controller('firms')
 export class FirmsController {
-  constructor(private readonly firmService: FirmsService) {}
+  constructor(private readonly firmsService: FirmsService) {}
 
+  // Existing endpoints
   @Post()
   async create(@Body() createFirmDto: CreateFirmDto) {
-    return this.firmService.create(createFirmDto);
+    return this.firmsService.create(createFirmDto);
   }
 
   @Get(':id')
   async findOne(@Param('id') id: string) {
-    return this.firmService.findById(id);
+    return this.firmsService.findById(id);
   }
 
-  @Get('owner/:ownerId')
-  async findByOwner(@Param('ownerId') ownerId: string) {
-    return this.firmService.findByOwnerId(new Types.ObjectId(ownerId));
+  // New endpoint for toggling leave settings
+  @Put(':id/leave-setting')
+  async toggleLeaveSetting(
+    @Param('id') id: string,
+    @Body() updateLeaveSettingDto: UpdateLeaveSettingDto,
+  ) {
+    return this.firmsService.toggleLeaveSetting(id, updateLeaveSettingDto);
+  }
+
+  @Get(':id/leave-settings')
+  async getLeaveSettings(@Param('id') id: string) {
+    return this.firmsService.getLeaveSettings(id);
   }
 }
