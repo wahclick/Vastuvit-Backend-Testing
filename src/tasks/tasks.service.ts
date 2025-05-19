@@ -188,4 +188,26 @@ export class TasksService {
       );
     }
   }
+  async findByFirmAndAssignee(
+    firmId: Types.ObjectId | string,
+    assignTo: Types.ObjectId | string
+  ): Promise<Task[]> {
+    try {
+      return this.taskModel
+        .find({ 
+          firmId: new Types.ObjectId(firmId), 
+          assignTo: new Types.ObjectId(assignTo) 
+        })
+        .populate('userId', 'name email')
+        .populate('projectId', 'name code')
+        .populate('assignTo', 'name email')
+        .populate('taskCheckBy', 'name email')
+        .exec();
+    } catch (error) {
+      console.error('Error finding tasks by firm and assignee:', error);
+      throw new InternalServerErrorException(
+        'Failed to find tasks by firm and assignee: ' + error.message,
+      );
+    }
+  }
 }

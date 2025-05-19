@@ -14,5 +14,6 @@ import { RanksModule } from 'src/ranks/ranks.module';
   ],
   providers: [CrewService],
   controllers: [CrewController],
+  exports: [CrewService],
 })
 export class CrewModule {}

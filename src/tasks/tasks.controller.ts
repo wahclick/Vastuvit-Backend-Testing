@@ -70,4 +70,15 @@ export class TasksController {
       new Types.ObjectId(taskCheckBy),
     );
   }
+  @Get('assignee/:assigneeId')
+  async findByAssigneeAndFirm(
+    @Param('assigneeId') assigneeId: string,
+    @Query('firmId') firmId: string
+  ) {
+    if (firmId) {
+      return this.tasksService.findByFirmAndAssignee(firmId, assigneeId);
+    }
+    return this.tasksService.findByAssignee(assigneeId);
+  }
+
 }

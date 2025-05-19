@@ -6,7 +6,7 @@ export type TaskDocument = Task & Document;
 
 @Schema({ timestamps: true })
 export class Task {
-  @Prop({ type: MongooseSchema.Types.ObjectId, ref: 'User', required: true })
+  @Prop({ type: MongooseSchema.Types.ObjectId, ref: 'Manager', required: true })
   userId: Types.ObjectId;
 
   @Prop({ type: MongooseSchema.Types.ObjectId, ref: 'Firm', required: true })
@@ -21,7 +21,7 @@ export class Task {
   @Prop()
   timeTaken: string;
 
-  @Prop({ type: MongooseSchema.Types.ObjectId, ref: 'User' })
+  @Prop({ type: MongooseSchema.Types.ObjectId, ref: 'crew' })
   assignTo: Types.ObjectId;
 
   @Prop({ enum: ['low', 'medium', 'high'], default: 'medium' })

@@ -9,6 +9,7 @@ import {
   Query,
   UnauthorizedException,
   NotFoundException,
+  Put,
 } from '@nestjs/common';
 import { CrewService } from './crew.service';
 import { RanksService } from '../ranks/ranks.service';
@@ -16,6 +17,7 @@ import { CreateCrewDto } from './dto/create-crew.dto';
 import { UpdateCrewDto } from './dto/update-crew.dto';
 import { LoginDto } from './dto/login.dto';
 import { Types } from 'mongoose';
+import { UpdateLeaveBalancesDto } from './dto/update-leave-balances.dto';
 
 @Controller('crew')
 export class CrewController {
@@ -79,17 +81,17 @@ export class CrewController {
     if (!name || !firmId) {
       throw new NotFoundException('Name and firmId parameters are required');
     }
-    
+
     try {
       const user = await this.crewService.findByName(
         name,
         new Types.ObjectId(firmId),
       );
-      
+
       if (!user) {
         throw new NotFoundException(`User with name ${name} not found`);
       }
-      
+
       return user;
     } catch (error) {
       if (error instanceof NotFoundException) {
@@ -120,5 +122,18 @@ export class CrewController {
   @Delete(':id')
   remove(@Param('id') id: string) {
     return this.crewService.remove(id);
+  }
+
+  @Put(':id/leave-balances')
+  async updateLeaveBalances(
+    @Param('id') id: string,
+    @Body() updateLeaveBalancesDto: UpdateLeaveBalancesDto,
+  ) {
+    return this.crewService.updateLeaveBalances(id, updateLeaveBalancesDto);
+  }
+
+  @Get(':id/leave-balances')
+  async getLeaveBalances(@Param('id') id: string) {
+    return this.crewService.getLeaveBalances(id);
   }
 }

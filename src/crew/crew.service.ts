@@ -3,6 +3,7 @@ import {
   Injectable,
   NotFoundException,
   InternalServerErrorException,
+  BadRequestException,
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
@@ -11,6 +12,7 @@ import { CreateCrewDto } from './dto/create-crew.dto';
 import { UpdateCrewDto } from './dto/update-crew.dto';
 import { Crew, CrewDocument } from './schema/crew.schema';
 import { DesignationsService } from 'src/designations/designations.service';
+import { UpdateLeaveBalancesDto } from './dto/update-leave-balances.dto';
 
 @Injectable()
 export class CrewService {
@@ -271,6 +273,64 @@ export class CrewService {
       }
       throw new NotFoundException(
         `Failed to find crew by name: ${error.message}`,
+      );
+    }
+  }
+  async updateLeaveBalances(
+    id: string,
+    updateLeaveBalancesDto: UpdateLeaveBalancesDto,
+  ): Promise<Crew> {
+    try {
+      if (!Types.ObjectId.isValid(id)) {
+        throw new BadRequestException(`Invalid ID format: ${id}`);
+      }
+
+      const objectId = new Types.ObjectId(id);
+
+      const numericBalances = {};
+      Object.entries(updateLeaveBalancesDto).forEach(([key, value]) => {
+        numericBalances[key] = isNaN(Number(value)) ? 0 : Number(value);
+      });
+
+      const updatedCrew = await this.crewModel
+        .findByIdAndUpdate(
+          objectId,
+          {
+            $set: {
+              leave_balances: numericBalances,
+              updatedAt: new Date(),
+            },
+          },
+          { new: true },
+        )
+        .exec();
+
+      if (!updatedCrew) {
+        throw new NotFoundException(`Crew with ID ${id} not found`);
+      }
+
+      return updatedCrew;
+    } catch (error) {
+      throw error;
+    }
+  }
+  // Get crew leave balances
+  async getLeaveBalances(id: string): Promise<any> {
+    try {
+      const crew = await this.crewModel.findById(id).exec();
+
+      if (!crew) {
+        throw new NotFoundException(`Crew with ID ${id} not found`);
+      }
+
+      return crew.leave_balances || {};
+    } catch (error) {
+      if (error instanceof NotFoundException) {
+        throw error;
+      }
+      console.error('Error getting leave balances:', error);
+      throw new InternalServerErrorException(
+        'Failed to get leave balances: ' + error.message,
       );
     }
   }
