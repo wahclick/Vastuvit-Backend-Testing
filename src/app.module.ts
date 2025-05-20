@@ -15,7 +15,7 @@ import { TasksModule } from './tasks/tasks.module';
 import { MemosModule } from './memos/memos.module';
 import { LeaveModule } from './leaves/leaves.module';
 import { AttendanceModule } from './attendance/attendance.module';
-
+import { TeamModule } from './team/team.module';
 
 
 
@@ -47,7 +47,8 @@ import { AttendanceModule } from './attendance/attendance.module';
     TasksModule,
     MemosModule,
     LeaveModule,
-    AttendanceModule
+    AttendanceModule,
+    TeamModule,
   ],
 
   controllers: [AppController],
