@@ -14,6 +14,9 @@ import { ProjectsModule } from './projects/projects.module';
 import { TasksModule } from './tasks/tasks.module';
 import { MemosModule } from './memos/memos.module';
 import { LeaveModule } from './leaves/leaves.module';
+import { AttendanceModule } from './attendance/attendance.module';
+
+
 
 
 @Module({
@@ -44,6 +47,7 @@ import { LeaveModule } from './leaves/leaves.module';
     TasksModule,
     MemosModule,
     LeaveModule,
+    AttendanceModule
   ],
 
   controllers: [AppController],
