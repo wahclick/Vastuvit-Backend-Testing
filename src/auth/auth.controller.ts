@@ -1,11 +1,16 @@
-import { Body, Controller, Post, UnauthorizedException } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  InternalServerErrorException,
+  Post,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { LoginDto } from './dto/login.dto/login.dto';
 
 @Controller('auth')
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
-
   @Post('login')
   login(@Body() loginDto: LoginDto) {
     return this.authService
@@ -17,6 +22,7 @@ export class AuthController {
         }
 
         const userData = JSON.parse(JSON.stringify(user));
+
         return {
           message: 'Login successful',
           user: {
@@ -28,6 +34,19 @@ export class AuthController {
             // Add other fields you need, but avoid sending password
           },
         };
+      })
+      .catch((error) => {
+        console.log(`Login failed: ${error.message}`, error.stack);
+
+        // Re-throw UnauthorizedException with the same message
+        if (error instanceof UnauthorizedException) {
+          throw error;
+        }
+
+        // For any other errors, throw a generic server error
+        throw new InternalServerErrorException(
+          'An error occurred during login. Please try again later.',
+        );
       });
   }
 }
