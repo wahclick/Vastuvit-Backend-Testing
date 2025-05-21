@@ -12,7 +12,10 @@ import { UpdateTaskDto } from './dto/update-task.dto';
 
 @Injectable()
 export class TasksService {
-  constructor(@InjectModel('Task') private taskModel: Model<TaskDocument>) {}
+  constructor(
+    @InjectModel('Task') private taskModel: Model<TaskDocument>,
+    @InjectModel('Crew') private crewModel: Model<any>, // Properly inject the Crew model
+  ) {}
 
   async create(createTaskDto: CreateTaskDto): Promise<Task> {
     try {
@@ -189,25 +192,30 @@ export class TasksService {
     }
   }
   async findByFirmAndAssignee(
-    firmId: Types.ObjectId | string,
-    assignTo: Types.ObjectId | string
-  ): Promise<Task[]> {
+    firmId: string,
+    assigneeId: string,
+    status?: string,
+  ) {
     try {
-      return this.taskModel
-        .find({ 
-          firmId: new Types.ObjectId(firmId), 
-          assignTo: new Types.ObjectId(assignTo) 
-        })
-        .populate('userId', 'name email')
-        .populate('projectId', 'name code')
-        .populate('assignTo', 'name email')
-        .populate('taskCheckBy', 'name email')
+      const query: any = {
+        firmId: new Types.ObjectId(firmId),
+        assignTo: new Types.ObjectId(assigneeId),
+      };
+
+      if (status) {
+        query.status = status;
+      }
+
+      // Use correct model references in populate
+      const tasks = await this.taskModel
+        .find(query)
+        .populate('projectId')
         .exec();
+
+      return tasks;
     } catch (error) {
       console.error('Error finding tasks by firm and assignee:', error);
-      throw new InternalServerErrorException(
-        'Failed to find tasks by firm and assignee: ' + error.message,
-      );
+      throw new Error(`Failed to find tasks: ${error.message}`);
     }
   }
 }

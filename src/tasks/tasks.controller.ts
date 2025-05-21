@@ -33,10 +33,7 @@ export class TasksController {
     return this.tasksService.findByProject(new Types.ObjectId(projectId));
   }
 
-  @Get('assignee/:assigneeId')
-  findByAssignee(@Param('assigneeId') assigneeId: string) {
-    return this.tasksService.findByAssignee(new Types.ObjectId(assigneeId));
-  }
+
 
   @Get(':id')
   findOne(@Param('id') id: string) {
@@ -73,12 +70,15 @@ export class TasksController {
   @Get('assignee/:assigneeId')
   async findByAssigneeAndFirm(
     @Param('assigneeId') assigneeId: string,
-    @Query('firmId') firmId: string
+    @Query('firmId') firmId: string,
+    @Query('status') status?: string
   ) {
     if (firmId) {
-      return this.tasksService.findByFirmAndAssignee(firmId, assigneeId);
+      // Pass status parameter if provided
+      return this.tasksService.findByFirmAndAssignee(firmId, assigneeId, status);
     }
-    return this.tasksService.findByAssignee(assigneeId);
+    return this.tasksService.findByAssignee(new Types.ObjectId(assigneeId));
   }
+
 
 }
