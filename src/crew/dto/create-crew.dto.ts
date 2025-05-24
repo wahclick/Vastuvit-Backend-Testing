@@ -7,6 +7,8 @@ import {
   IsEmail,
   IsDateString,
   IsBoolean,
+  MinLength,
+  Matches,
 } from '@nestjs/class-validator';
 import { Types } from 'mongoose';
 

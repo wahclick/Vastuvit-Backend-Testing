@@ -91,6 +91,68 @@ export class Firms {
     ph?: boolean;
     bl?: boolean;
   };
+
+  @Prop({ type: Object })
+  office_timing: {
+    hour: number;
+    min: number;
+    timingoffice: string;
+    start: string;
+    end: string;
+    lunchStart?: string;
+    lunchEnd?: string;
+  };
+  @Prop({ type: Object, default: { percentage: 0, enabled: false } })
+  profit_settings: {
+    percentage: number;
+    enabled: boolean;
+  };
+
+  // NEW: Threshold settings
+  @Prop({ type: Object, default: { percentage: 0, enabled: false } })
+  threshold_settings: {
+    percentage: number;
+    enabled: boolean;
+  };
+  @Prop({ type: Object, default: { isEnabled: false, salaryper: 0 } })
+  overtime_settings: {
+    isEnabled: boolean;
+    salaryper: number;
+  };
+  @Prop({
+    type: Object,
+    default: {
+      pc: false, // Project Category
+      pd: false, // Project Date
+      pm: false, // Project Month
+      py: false, // Project Year
+      coin: false, // Company Initial
+      clin: false, // Client Initial
+    },
+  })
+  project_code_settings: {
+    pc: boolean;
+    pd: boolean;
+    pm: boolean;
+    py: boolean;
+    coin: boolean;
+    clin: boolean;
+  };
+  @Prop({ type: Object, default: {} })
+  holiday_settings: {
+    [year: number]: {
+      statutory?: {
+        selectedDays: string[];
+        saturdayOptions: string[];
+      };
+      National?: { [id: string]: any };
+      Assigned?: { [id: string]: any };
+      Unplanned?: { [id: string]: any };
+      specialWorkingDays?: { [id: string]: any };
+      totalholiday?: number;
+      totalworkingday?: number;
+    };
+  };
 }
 
 export const FirmsSchema = SchemaFactory.createForClass(Firms);

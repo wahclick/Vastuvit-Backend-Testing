@@ -28,6 +28,7 @@ export class TeamController {
     return this.teamService.findAllTeams();
   }
 
+  // Put all specific routes BEFORE the generic :id route
   @Get('firm/:firmId')
   findTeamsByFirm(@Param('firmId') firmId: string) {
     return this.teamService.findTeamsByFirm(firmId);
@@ -48,6 +49,7 @@ export class TeamController {
     return this.teamService.findTeamsByCrewMember(crewId);
   }
 
+  // Put the generic :id route LAST
   @Get(':id')
   findTeamById(@Param('id') id: string) {
     return this.teamService.findTeamById(id);

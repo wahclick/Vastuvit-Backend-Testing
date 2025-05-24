@@ -56,7 +56,7 @@ export class CreateTaskDto {
   @IsOptional()
   timeLimit?: string;
 
-  @IsEnum(['pending', 'in-progress', 'completed', 'cancelled'])
+  @IsEnum(['pending', 'in-progress', 'redo', 'completed', 'cancelled'])
   @IsOptional()
   status?: string = 'pending';
 
