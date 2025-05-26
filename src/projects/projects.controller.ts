@@ -230,4 +230,8 @@ export class ProjectsController {
   async updateFloorData(@Param('id') id: string, @Body() floorData: any) {
     return this.projectsService.updateFloorData(id, floorData);
   }
+  @Get('firm/:firmId')
+  async findByFirm(@Param('firmId') firmId: string) {
+    return this.projectsService.findAll(firmId);
+  }
 }

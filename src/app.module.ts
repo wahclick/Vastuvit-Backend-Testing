@@ -16,6 +16,7 @@ import { MemosModule } from './memos/memos.module';
 import { LeaveModule } from './leaves/leaves.module';
 import { AttendanceModule } from './attendance/attendance.module';
 import { TeamModule } from './team/team.module';
+import { AccountingModule } from './accounting/accounting.module';
 
 
 
@@ -49,6 +50,7 @@ import { TeamModule } from './team/team.module';
     LeaveModule,
     AttendanceModule,
     TeamModule,
+    AccountingModule,
   ],
 
   controllers: [AppController],

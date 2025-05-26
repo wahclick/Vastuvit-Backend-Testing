@@ -293,14 +293,14 @@ export class FirmsService {
     if (!id || id === 'null' || id === 'undefined') {
       throw new NotFoundException('Valid firm ID is required');
     }
-
-    const { holidayId, date, name, day } = holidayData;
-
+  
+    const { date, name, day } = holidayData;
+    const holidayId = new Types.ObjectId().toString(); // Generate MongoDB ObjectId
+  
     return await this.firmsModel.findByIdAndUpdate(
       id,
       {
         [`holiday_settings.${year}.${type}.${holidayId}`]: {
-          id: holidayId,
           date,
           name,
           day,
@@ -311,7 +311,6 @@ export class FirmsService {
       { new: true },
     );
   }
-
   // Remove holiday
   async removeHoliday(
     id: string,
@@ -341,14 +340,14 @@ export class FirmsService {
     if (!id || id === 'null' || id === 'undefined') {
       throw new NotFoundException('Valid firm ID is required');
     }
-
-    const { specialDayId, date, name, day } = data;
-
+  
+    const { date, name, day } = data;
+    const specialDayId = new Types.ObjectId().toString(); // Generate MongoDB ObjectId
+  
     return await this.firmsModel.findByIdAndUpdate(
       id,
       {
         [`holiday_settings.${year}.specialWorkingDays.${specialDayId}`]: {
-          id: specialDayId,
           date,
           name,
           day,
@@ -358,7 +357,6 @@ export class FirmsService {
       { new: true },
     );
   }
-
   // Remove special working day
   async removeSpecialWorkingDay(
     id: string,
