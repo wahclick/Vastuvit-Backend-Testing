@@ -17,6 +17,9 @@ import { LeaveModule } from './leaves/leaves.module';
 import { AttendanceModule } from './attendance/attendance.module';
 import { TeamModule } from './team/team.module';
 import { AccountingModule } from './accounting/accounting.module';
+import { ReferralModule } from './referral/referral.module';
+import { AssociateModule } from './associate/associate.module';
+import { VendorModule } from './vendor/vendor.module';
 
 
 
@@ -51,6 +54,9 @@ import { AccountingModule } from './accounting/accounting.module';
     AttendanceModule,
     TeamModule,
     AccountingModule,
+    ReferralModule,
+    AssociateModule,
+    VendorModule,
   ],
 
   controllers: [AppController],

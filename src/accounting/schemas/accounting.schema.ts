@@ -46,6 +46,13 @@ export class Accounting {
 
   @Prop({ type: String })
   expenseType: string;
+
+  // GENERIC FIELDS FOR ANY PERSON/ENTITY
+  @Prop({ type: Types.ObjectId, required: false })
+  personId?: Types.ObjectId;
+
+  @Prop({ type: String })
+  personName: string;
 }
 
 export const AccountingSchema = SchemaFactory.createForClass(Accounting);

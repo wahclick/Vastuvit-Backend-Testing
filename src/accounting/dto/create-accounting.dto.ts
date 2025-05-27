@@ -14,8 +14,12 @@ export class CreateAccountingDto {
   firmId: string;
 
   @IsOptional()
-  @IsMongoId()
-  projectId?: string;
+  @IsString()
+  personId?: string;
+
+  @IsOptional()
+  @IsString()
+  personName?: string;
 
   @IsDateString()
   tentativeDate: string;
