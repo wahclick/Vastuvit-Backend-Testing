@@ -17,6 +17,73 @@ export class AccountingService {
     private accountingModel: Model<AccountingDocument>,
   ) {}
 
+  async findAll(firmId: string): Promise<Accounting[]> {
+    try {
+      const results = await this.accountingModel
+        .find({ firmId })
+        .populate('projectId')
+        .sort({ tentativeDate: -1 })
+        .exec();
+      
+      return results;
+    } catch (error) {
+      console.error('Find all accounting error:', error);
+      throw new InternalServerErrorException(
+        'Failed to find accounting records: ' + error.message,
+      );
+    }
+  }
+  async findByFirmAndDateRange(
+    firmId: string,
+    startDate: Date,
+    endDate: Date,
+    status?: string[]
+  ) {
+    try {
+      console.log('=== Date Range Query Debug ===');
+      console.log('firmId:', firmId);
+      console.log('startDate:', startDate);
+      console.log('endDate:', endDate);
+      console.log('status:', status);
+  
+      const adjustedEndDate = new Date(endDate);
+      adjustedEndDate.setHours(23, 59, 59, 999);
+  
+      const query: any = {
+        firmId: firmId,
+        tentativeDate: {
+          $gte: startDate,
+          $lte: adjustedEndDate
+        }
+      };
+  
+      if (status && status.length > 0) {
+        const statusLowerCase = status.map(s => s.toLowerCase());
+        query.status = { $in: statusLowerCase };
+      }
+  
+      console.log('MongoDB Query:', JSON.stringify(query, null, 2));
+  
+      // ✅ REMOVE ALL POPULATE - Just get the raw data first
+      const results = await this.accountingModel
+        .find(query)
+        .sort({ tentativeDate: 1 })
+        .exec();
+  
+      console.log('Raw results found:', results.length);
+      console.log('Sample raw result:', results[0]);
+  
+      // ✅ For now, return without population to test
+      return results;
+  
+    } catch (error) {
+      console.error('Find by firm and date range error:', error);
+      throw new InternalServerErrorException(
+        'Failed to find accounting records by date range: ' + error.message,
+      );
+    }
+  }
+  // ... rest of your methods remain the same
   async create(createAccountingDto: CreateAccountingDto): Promise<Accounting> {
     try {
       const createdAccounting = new this.accountingModel(createAccountingDto);
@@ -25,21 +92,6 @@ export class AccountingService {
       console.error('Create accounting error:', error);
       throw new InternalServerErrorException(
         'Failed to create accounting record: ' + error.message,
-      );
-    }
-  }
-
-  async findAll(firmId: string): Promise<Accounting[]> {
-    try {
-      return this.accountingModel
-        .find({ firmId })
-        .populate('projectId')
-        .sort({ tentativeDate: -1 })
-        .exec();
-    } catch (error) {
-      console.error('Find all accounting error:', error);
-      throw new InternalServerErrorException(
-        'Failed to find accounting records: ' + error.message,
       );
     }
   }
