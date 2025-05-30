@@ -24,7 +24,7 @@ export class AccountingService {
         .populate('projectId')
         .sort({ tentativeDate: -1 })
         .exec();
-      
+
       return results;
     } catch (error) {
       console.error('Find all accounting error:', error);
@@ -33,57 +33,85 @@ export class AccountingService {
       );
     }
   }
+  // Fixed findByFirmAndDateRange method - Safe handling of missing projectId
   async findByFirmAndDateRange(
     firmId: string,
     startDate: Date,
     endDate: Date,
     status?: string[]
   ) {
-    try {
-      console.log('=== Date Range Query Debug ===');
-      console.log('firmId:', firmId);
-      console.log('startDate:', startDate);
-      console.log('endDate:', endDate);
-      console.log('status:', status);
+    console.log('=== Date Range Query Debug ===');
+    console.log('firmId:', firmId);
+    console.log('startDate:', startDate);
+    console.log('endDate:', endDate);
+    console.log('status:', status);
   
-      const adjustedEndDate = new Date(endDate);
-      adjustedEndDate.setHours(23, 59, 59, 999);
+    const adjustedEndDate = new Date(endDate);
+    adjustedEndDate.setHours(23, 59, 59, 999);
   
-      const query: any = {
-        firmId: firmId,
-        tentativeDate: {
-          $gte: startDate,
-          $lte: adjustedEndDate
-        }
-      };
-  
-      if (status && status.length > 0) {
-        const statusLowerCase = status.map(s => s.toLowerCase());
-        query.status = { $in: statusLowerCase };
+    // MOVE QUERY OUTSIDE TRY BLOCK
+    const query: any = {
+      firmId: firmId,
+      tentativeDate: {
+        $gte: startDate,
+        $lte: adjustedEndDate
       }
+    };
   
-      console.log('MongoDB Query:', JSON.stringify(query, null, 2));
+    if (status && status.length > 0) {
+      const statusLowerCase = status.map(s => s.toLowerCase());
+      query.status = { $in: statusLowerCase };
+    }
   
-      // ✅ REMOVE ALL POPULATE - Just get the raw data first
-      const results = await this.accountingModel
+    console.log('MongoDB Query:', JSON.stringify(query, null, 2));
+  
+    try {
+      // First, let's check what we get without populate
+      const rawResults = await this.accountingModel
         .find(query)
         .sort({ tentativeDate: 1 })
         .exec();
   
-      console.log('Raw results found:', results.length);
-      console.log('Sample raw result:', results[0]);
+      console.log('Raw results (no populate):', rawResults.length);
+      console.log('Sample raw result projectId type:', typeof rawResults[0]?.projectId);
+      console.log('Sample raw result projectId value:', rawResults[0]?.projectId);
   
-      // ✅ For now, return without population to test
-      return results;
+      // Now try with populate and see what happens
+      const populatedResults = await this.accountingModel
+        .find(query)
+        .populate({
+          path: 'projectId',
+          model: 'Project', // Explicitly specify the model name
+          select: 'projectName name project title projectCode', // Select specific fields
+        })
+        .sort({ tentativeDate: 1 })
+        .exec();
+  
+      console.log('Populated results:', populatedResults.length);
+      console.log('Sample populated result projectId type:', typeof populatedResults[0]?.projectId);
+      console.log('Sample populated result projectId:', populatedResults[0]?.projectId);
+  
+      return populatedResults;
   
     } catch (error) {
       console.error('Find by firm and date range error:', error);
-      throw new InternalServerErrorException(
-        'Failed to find accounting records by date range: ' + error.message,
-      );
+      
+      // Fallback: return results without population if populate fails
+      try {
+        console.log('Fallback: returning results without populate');
+        const fallbackResults = await this.accountingModel
+          .find(query) // NOW QUERY IS ACCESSIBLE
+          .sort({ tentativeDate: 1 })
+          .exec();
+        return fallbackResults;
+      } catch (fallbackError) {
+        console.error('Fallback also failed:', fallbackError);
+        throw new InternalServerErrorException(
+          'Failed to find accounting records by date range: ' + error.message,
+        );
+      }
     }
   }
-  // ... rest of your methods remain the same
   async create(createAccountingDto: CreateAccountingDto): Promise<Accounting> {
     try {
       const createdAccounting = new this.accountingModel(createAccountingDto);

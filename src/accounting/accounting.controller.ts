@@ -58,6 +58,8 @@ export class AccountingController {
     return this.accountingService.findByProject(projectId);
   }
 
+
+  
   // GENERIC ROUTES LAST - this catches any other :id patterns
   @Get(':id')
   async findOne(@Param('id') id: string) {

@@ -1,7 +1,9 @@
+
 // src/accounting/schemas/accounting.schema.ts
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document, Types } from 'mongoose';
 import { PaymentStatus } from '../enums/payment-status.enum';
+import { ChequeStatus } from '../enums/cheque-status.enum';
 
 export type AccountingDocument = Accounting & Document;
 
@@ -29,6 +31,14 @@ export class Accounting {
   })
   status: PaymentStatus;
 
+  // NEW: Separate cheque status field
+  @Prop({
+    type: String,
+    enum: Object.values(ChequeStatus),
+    default: ChequeStatus.NOT_APPLICABLE,
+  })
+  chequeStatus: ChequeStatus;
+
   @Prop({ type: String })
   paymentType: string;
 
@@ -44,10 +54,13 @@ export class Accounting {
   @Prop({ type: Date })
   dateOfPayment: Date;
 
+  // NEW: Separate cheque clearance date
+  @Prop({ type: Date })
+  chequeClearanceDate: Date;
+
   @Prop({ type: String })
   expenseType: string;
 
-  // GENERIC FIELDS FOR ANY PERSON/ENTITY
   @Prop({ type: Types.ObjectId, required: false })
   personId?: Types.ObjectId;
 
