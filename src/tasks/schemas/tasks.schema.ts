@@ -21,7 +21,7 @@ export class Task {
   @Prop()
   timeTaken: string;
 
-  @Prop({ type: MongooseSchema.Types.ObjectId, ref: 'crew' })
+  @Prop({ type: MongooseSchema.Types.ObjectId, ref: 'Crew' })
   assignTo: Types.ObjectId;
 
   @Prop({ enum: ['low', 'medium', 'high'], default: 'medium' })

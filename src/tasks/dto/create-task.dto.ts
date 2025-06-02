@@ -9,8 +9,6 @@ import {
 } from '@nestjs/class-validator';
 import { Types } from 'mongoose';
 
-
-
 export class CreateTaskDto {
   @IsMongoId()
   @IsNotEmpty()

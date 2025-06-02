@@ -218,4 +218,34 @@ export class TasksService {
       throw new Error(`Failed to find tasks: ${error.message}`);
     }
   }
+  async findPendingReviewTasks(
+    firmId: string,
+    status: string,
+    remarkStatus: string,
+  ) {
+    try {
+      console.log('Params:', { firmId, status, remarkStatus });
+
+      const tasks = await this.taskModel
+        .find({
+          firmId: new Types.ObjectId(firmId),
+          status: status, // 'complete'
+          remarkStatus: remarkStatus, // 'pending'
+        })
+        .populate('assignTo', 'name email')
+        .populate('userId', 'name email')
+        .populate('projectId', 'name')
+        .sort({
+          priority: 1, // Critical first
+          updatedAt: -1, // Recent first
+        })
+        .exec();
+
+      console.log(`Found ${tasks.length} pending review tasks`);
+      return tasks;
+    } catch (error) {
+      console.error('Error in findPendingReviewTasks:', error);
+      throw new Error(`Failed to fetch pending review tasks: ${error.message}`);
+    }
+  }
 }

@@ -21,30 +21,32 @@ export class AccountingController {
 
   @Post()
   @HttpCode(HttpStatus.CREATED)
-  async create(@Body() createAccountingDto: CreateAccountingDto) {
+  async createAccountingRecord(
+    @Body() createAccountingDto: CreateAccountingDto,
+  ) {
     return this.accountingService.create(createAccountingDto);
   }
 
   // SPECIFIC ROUTES FIRST - these must come before generic :id routes
   @Get('firm/:firmId')
-  async findByFirm(
+  async getAccountingRecordsByFirm(
     @Param('firmId') firmId: string,
     @Query('startDate') startDate?: string,
     @Query('endDate') endDate?: string,
     @Query('status') status?: string,
   ) {
-   
-    
     // If no date filters provided, use findAll to get all records
-    console.log(firmId)
+    console.log(firmId);
     if (!startDate && !endDate) {
       return this.accountingService.findAll(firmId);
     }
-    
-    const statusArray = status ? status.split(',').map(s => s.trim()) : undefined;
+
+    const statusArray = status
+      ? status.split(',').map((s) => s.trim())
+      : undefined;
     const start = startDate ? new Date(startDate) : new Date();
     const end = endDate ? new Date(endDate) : new Date();
-    
+
     return this.accountingService.findByFirmAndDateRange(
       firmId,
       start,
@@ -54,21 +56,19 @@ export class AccountingController {
   }
 
   @Get('project/:projectId')
-  async findByProject(@Param('projectId') projectId: string) {
+  async getAccountingRecordsByProject(@Param('projectId') projectId: string) {
     return this.accountingService.findByProject(projectId);
   }
 
-
-  
   // GENERIC ROUTES LAST - this catches any other :id patterns
   @Get(':id')
-  async findOne(@Param('id') id: string) {
-    console.log('findOne called with id:', id);
+  async getAccountingRecordById(@Param('id') id: string) {
+    console.log('getAccountingRecordById called with id:', id);
     return this.accountingService.findOne(id);
   }
 
   @Patch(':id')
-  async update(
+  async updateAccountingRecord(
     @Param('id') id: string,
     @Body() updateAccountingDto: UpdateAccountingDto,
   ) {
@@ -76,13 +76,16 @@ export class AccountingController {
   }
 
   @Patch(':id/status')
-  async updateStatus(@Param('id') id: string, @Body('status') status: string) {
+  async updateAccountingRecordStatus(
+    @Param('id') id: string,
+    @Body('status') status: string,
+  ) {
     return this.accountingService.updateStatus(id, status);
   }
 
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
-  async remove(@Param('id') id: string) {
+  async deleteAccountingRecord(@Param('id') id: string) {
     return this.accountingService.remove(id);
   }
 }

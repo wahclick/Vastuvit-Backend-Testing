@@ -1,4 +1,4 @@
-// tasks.controller.ts
+// tasks.controller.ts - FIXED ROUTE ORDER
 import {
   Controller,
   Get,
@@ -28,13 +28,35 @@ export class TasksController {
     return this.tasksService.findAll(new Types.ObjectId(firmId));
   }
 
+  // MOVE THIS BEFORE THE :id ROUTE!
+  @Get('pending-review')
+  async findPendingReviewTasks(
+    @Query('firmId') firmId: string,
+    @Query('status') status: string = 'complete',
+    @Query('remarkStatus') remarkStatus: string = 'pending'
+  ) {
+    return this.tasksService.findPendingReviewTasks(firmId, status, remarkStatus);
+  }
+
+  // MOVE ALL SPECIFIC ROUTES BEFORE PARAMETERIZED ROUTES
   @Get('project/:projectId')
   findByProject(@Param('projectId') projectId: string) {
     return this.tasksService.findByProject(new Types.ObjectId(projectId));
   }
 
+  @Get('assignee/:assigneeId')
+  async findByAssigneeAndFirm(
+    @Param('assigneeId') assigneeId: string,
+    @Query('firmId') firmId: string,
+    @Query('status') status?: string
+  ) {
+    if (firmId) {
+      return this.tasksService.findByFirmAndAssignee(firmId, assigneeId, status);
+    }
+    return this.tasksService.findByAssignee(new Types.ObjectId(assigneeId));
+  }
 
-
+  // KEEP :id ROUTES AT THE BOTTOM
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.tasksService.findOne(id);
@@ -67,18 +89,4 @@ export class TasksController {
       new Types.ObjectId(taskCheckBy),
     );
   }
-  @Get('assignee/:assigneeId')
-  async findByAssigneeAndFirm(
-    @Param('assigneeId') assigneeId: string,
-    @Query('firmId') firmId: string,
-    @Query('status') status?: string
-  ) {
-    if (firmId) {
-      // Pass status parameter if provided
-      return this.tasksService.findByFirmAndAssignee(firmId, assigneeId, status);
-    }
-    return this.tasksService.findByAssignee(new Types.ObjectId(assigneeId));
-  }
-
-
 }

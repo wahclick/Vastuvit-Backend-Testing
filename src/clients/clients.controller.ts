@@ -13,48 +13,55 @@ import { CreateClientDto } from './dto/create-client.dto';
 import { UpdateClientDto } from './dto/update-client.dto';
 import { Types } from 'mongoose';
 
-
 @Controller('clients')
 export class ClientsController {
   constructor(private readonly clientService: ClientsService) {}
 
-  @Post('create')
-  create(@Body() createClientDto: CreateClientDto) {
+  // Route: POST /clients/createClient
+  @Post('createClient')
+  createClient(@Body() createClientDto: CreateClientDto) {
     return this.clientService.create(createClientDto);
   }
 
-  @Get()
-  findAll(@Query('firmId') firmId: string) {
+  // Route: GET /clients/getAllClients?firmId=...
+  @Get('getAllClients')
+  getAllClients(@Query('firmId') firmId: string) {
     return this.clientService.findAll(new Types.ObjectId(firmId));
   }
 
-  @Get('manager/:userId')
-  findByManager(@Param('userId') userId: string) {
+  // Route: GET /clients/getClientsByManager/:userId
+  @Get('getClientsByManager/:userId')
+  getClientsByManager(@Param('userId') userId: string) {
     return this.clientService.findByManager(new Types.ObjectId(userId));
   }
 
-  @Get(':id')
-  findOne(@Param('id') id: string) {
+  // Route: GET /clients/getClientById/:id
+  @Get('getClientById/:id')
+  getClientById(@Param('id') id: string) {
     return this.clientService.findOne(id);
   }
 
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateClientDto: UpdateClientDto) {
+  // Route: PATCH /clients/updateClient/:id
+  @Patch('updateClient/:id')
+  updateClient(@Param('id') id: string, @Body() updateClientDto: UpdateClientDto) {
     return this.clientService.update(id, updateClientDto);
   }
 
-  @Delete(':id')
-  remove(@Param('id') id: string) {
+  // Route: DELETE /clients/deleteClient/:id
+  @Delete('deleteClient/:id')
+  deleteClient(@Param('id') id: string) {
     return this.clientService.remove(id);
   }
 
-  @Patch(':id/toggle')
-  toggleEnabled(@Param('id') id: string) {
+  // Route: PATCH /clients/toggleClientStatus/:id
+  @Patch('toggleClientStatus/:id')
+  toggleClientStatus(@Param('id') id: string) {
     return this.clientService.toggleEnabled(id);
   }
 
-  @Patch(':clientId/projects/:projectId/add')
-  addProject(
+  // Route: PATCH /clients/addProjectToClient/:clientId/project/:projectId
+  @Patch('addProjectToClient/:clientId/project/:projectId')
+  addProjectToClient(
     @Param('clientId') clientId: string,
     @Param('projectId') projectId: string,
   ) {
@@ -64,8 +71,9 @@ export class ClientsController {
     );
   }
 
-  @Patch(':clientId/projects/:projectId/remove')
-  removeProject(
+  // Route: PATCH /clients/removeProjectFromClient/:clientId/project/:projectId
+  @Patch('removeProjectFromClient/:clientId/project/:projectId')
+  removeProjectFromClient(
     @Param('clientId') clientId: string,
     @Param('projectId') projectId: string,
   ) {
