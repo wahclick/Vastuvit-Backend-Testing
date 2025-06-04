@@ -9,7 +9,7 @@ export class Task {
   @Prop({ type: MongooseSchema.Types.ObjectId, ref: 'Manager', required: true })
   userId: Types.ObjectId;
 
-  @Prop({ type: MongooseSchema.Types.ObjectId, ref: 'Firm', required: true })
+  @Prop({ type: MongooseSchema.Types.ObjectId, ref: 'Firms', required: true })
   firmId: Types.ObjectId;
 
   @Prop({ type: MongooseSchema.Types.ObjectId, ref: 'Project', required: true })
@@ -45,7 +45,7 @@ export class Task {
   })
   status: string;
 
-  @Prop({ type: MongooseSchema.Types.ObjectId, ref: 'User' })
+  @Prop({ type: MongooseSchema.Types.ObjectId, ref: 'Manager' })
   taskCheckBy: Types.ObjectId;
 
   @Prop({ enum: ['approved', 'rejected', 'pending'], default: 'pending' })

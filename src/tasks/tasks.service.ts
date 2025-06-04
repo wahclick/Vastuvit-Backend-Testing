@@ -33,10 +33,10 @@ export class TasksService {
     try {
       return this.taskModel
         .find({ firmId })
-        .populate('userId', 'name')
+        .populate('userId', 'name email') // Manager has name directly
         .populate('projectId', 'name')
-        .populate('assignTo', 'name')
-        .populate('taskCheckBy', 'name')
+        .populate('assignTo', 'name email') // Crew
+        .populate('taskCheckBy', 'name email') // Crew
         .exec();
     } catch (error) {
       console.error('Error finding tasks:', error);
@@ -45,22 +45,22 @@ export class TasksService {
       );
     }
   }
-
+  
   async findOne(id: string): Promise<Task> {
     try {
       const task = await this.taskModel
         .findById(id)
-        .populate('userId', 'name')
+        .populate('userId', 'name email') // Manager
         .populate('firmId', 'name')
         .populate('projectId', 'name')
-        .populate('assignTo', 'name')
-        .populate('taskCheckBy', 'name')
+        .populate('assignTo', 'name email') // Crew
+        .populate('taskCheckBy', 'name email') // Crew
         .exec();
-
+  
       if (!task) {
         throw new NotFoundException(`Task with ID ${id} not found`);
       }
-
+  
       return task;
     } catch (error) {
       if (error instanceof NotFoundException) {
@@ -72,17 +72,84 @@ export class TasksService {
       );
     }
   }
-
+  
+  async findByProject(projectId: Types.ObjectId | string): Promise<Task[]> {
+    try {
+      return this.taskModel
+        .find({ projectId })
+        .populate('userId', 'name email') // Manager
+        .populate('assignTo', 'name email') // Crew
+        .populate('taskCheckBy', 'name email') // Crew
+        .exec();
+    } catch (error) {
+      console.error('Error finding tasks by project:', error);
+      throw new InternalServerErrorException(
+        'Failed to find tasks by project: ' + error.message,
+      );
+    }
+  }
+  
+  async findByAssignee(assignTo: Types.ObjectId | string): Promise<Task[]> {
+    try {
+      return this.taskModel
+        .find({ assignTo })
+        .populate('userId', 'name email') // Manager
+        .populate('projectId', 'name')
+        .populate('taskCheckBy', 'name email') // Crew
+        .exec();
+    } catch (error) {
+      console.error('Error finding tasks by assignee:', error);
+      throw new InternalServerErrorException(
+        'Failed to find tasks by assignee: ' + error.message,
+      );
+    }
+  }
+  
+  async findPendingReviewTasks(
+    firmId: string,
+    status: string,
+    remarkStatus: string,
+  ) {
+    try {
+      console.log('Params:', { firmId, status, remarkStatus });
+  
+      const tasks = await this.taskModel
+        .find({
+          firmId: new Types.ObjectId(firmId),
+          status: status, // 'complete'
+          remarkStatus: remarkStatus, // 'pending'
+        })
+        .populate('assignTo', 'name email') // Crew
+        .populate('userId', 'name email') // Manager
+        .populate('projectId', 'name')
+        .sort({
+          priority: 1, // Critical first
+          updatedAt: -1, // Recent first
+        })
+        .exec();
+  
+      console.log(`Found ${tasks.length} pending review tasks`);
+      return tasks;
+    } catch (error) {
+      console.error('Error in findPendingReviewTasks:', error);
+      throw new Error(`Failed to fetch pending review tasks: ${error.message}`);
+    }
+  }
   async update(id: string, updateTaskDto: UpdateTaskDto): Promise<Task> {
     try {
       const updatedTask = await this.taskModel
         .findByIdAndUpdate(id, updateTaskDto, { new: true })
+        .populate('userId', 'name email') // Manager
+        .populate('firmId', 'name')
+        .populate('projectId', 'name')
+        .populate('assignTo', 'name email') // Crew
+        .populate('taskCheckBy', 'name email') // Crew
         .exec();
-
+  
       if (!updatedTask) {
         throw new NotFoundException(`Task with ID ${id} not found`);
       }
-
+  
       return updatedTask;
     } catch (error) {
       if (error instanceof NotFoundException) {
@@ -94,11 +161,11 @@ export class TasksService {
       );
     }
   }
-
+  
   async remove(id: string): Promise<void> {
     try {
       const result = await this.taskModel.findByIdAndDelete(id).exec();
-
+  
       if (!result) {
         throw new NotFoundException(`Task with ID ${id} not found`);
       }
@@ -112,47 +179,15 @@ export class TasksService {
       );
     }
   }
-
-  async findByProject(projectId: Types.ObjectId | string): Promise<Task[]> {
-    try {
-      return this.taskModel
-        .find({ projectId })
-        .populate('userId', 'name')
-        .populate('assignTo', 'name')
-        .populate('taskCheckBy', 'name')
-        .exec();
-    } catch (error) {
-      console.error('Error finding tasks by project:', error);
-      throw new InternalServerErrorException(
-        'Failed to find tasks by project: ' + error.message,
-      );
-    }
-  }
-
-  async findByAssignee(assignTo: Types.ObjectId | string): Promise<Task[]> {
-    try {
-      return this.taskModel
-        .find({ assignTo })
-        .populate('userId', 'name')
-        .populate('projectId', 'name')
-        .populate('taskCheckBy', 'name')
-        .exec();
-    } catch (error) {
-      console.error('Error finding tasks by assignee:', error);
-      throw new InternalServerErrorException(
-        'Failed to find tasks by assignee: ' + error.message,
-      );
-    }
-  }
-
+  
   async updateStatus(id: string, status: string): Promise<Task> {
     try {
       const task = await this.taskModel.findById(id);
-
+  
       if (!task) {
         throw new NotFoundException(`Task with ID ${id} not found`);
       }
-
+  
       task.status = status;
       return task.save();
     } catch (error) {
@@ -165,7 +200,7 @@ export class TasksService {
       );
     }
   }
-
+  
   async updateRemarkStatus(
     id: string,
     remarkStatus: string,
@@ -173,11 +208,11 @@ export class TasksService {
   ): Promise<Task> {
     try {
       const task = await this.taskModel.findById(id);
-
+  
       if (!task) {
         throw new NotFoundException(`Task with ID ${id} not found`);
       }
-
+  
       task.remarkStatus = remarkStatus;
       task.taskCheckBy = taskCheckBy;
       return task.save();
@@ -191,6 +226,7 @@ export class TasksService {
       );
     }
   }
+  
   async findByFirmAndAssignee(
     firmId: string,
     assigneeId: string,
@@ -201,51 +237,22 @@ export class TasksService {
         firmId: new Types.ObjectId(firmId),
         assignTo: new Types.ObjectId(assigneeId),
       };
-
+  
       if (status) {
         query.status = status;
       }
-
-      // Use correct model references in populate
+  
       const tasks = await this.taskModel
         .find(query)
-        .populate('projectId')
+        .populate('userId', 'name email') // Manager
+        .populate('projectId', 'name')
+        .populate('assignTo', 'name email') // Crew
+        .populate('taskCheckBy', 'name email') // Crew
         .exec();
-
+  
       return tasks;
     } catch (error) {
       console.error('Error finding tasks by firm and assignee:', error);
       throw new Error(`Failed to find tasks: ${error.message}`);
     }
-  }
-  async findPendingReviewTasks(
-    firmId: string,
-    status: string,
-    remarkStatus: string,
-  ) {
-    try {
-      console.log('Params:', { firmId, status, remarkStatus });
-
-      const tasks = await this.taskModel
-        .find({
-          firmId: new Types.ObjectId(firmId),
-          status: status, // 'complete'
-          remarkStatus: remarkStatus, // 'pending'
-        })
-        .populate('assignTo', 'name email')
-        .populate('userId', 'name email')
-        .populate('projectId', 'name')
-        .sort({
-          priority: 1, // Critical first
-          updatedAt: -1, // Recent first
-        })
-        .exec();
-
-      console.log(`Found ${tasks.length} pending review tasks`);
-      return tasks;
-    } catch (error) {
-      console.error('Error in findPendingReviewTasks:', error);
-      throw new Error(`Failed to fetch pending review tasks: ${error.message}`);
-    }
-  }
-}
+  }}
