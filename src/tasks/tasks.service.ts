@@ -245,7 +245,7 @@ export class TasksService {
       const tasks = await this.taskModel
         .find(query)
         .populate('userId', 'name email') // Manager
-        .populate('projectId', 'name')
+        .populate('projectId', 'name', 'projectType')
         .populate('assignTo', 'name email') // Crew
         .populate('taskCheckBy', 'name email') // Crew
         .exec();
