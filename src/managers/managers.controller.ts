@@ -1,7 +1,17 @@
-import { Body, Controller, Get, Param, Post, Put, Query } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Param,
+  Patch,
+  Post,
+  Put,
+  Query,
+} from '@nestjs/common';
 import { ManagersService } from './managers.service';
 import { CreateManagerDto } from './dto/create-manager.dto';
 import { CompleteProfileDto } from './dto/complete-profile.dto';
+import { UpdateManagerDto } from './dto/update-manager.dto';
 
 @Controller('managers')
 export class ManagersController {
@@ -25,6 +35,19 @@ export class ManagersController {
       message: 'Profile completed successfully',
       firmId: firmId,
     };
+  }
+  // Update your ManagersController PATCH method
+
+  @Patch(':id')
+  async updateManager(
+    @Param('id') id: string,
+    @Body() updateManagerDto: UpdateManagerDto,
+  ) {
+    const updatedManager = await this.managersService.updateManager(
+      id,
+      updateManagerDto,
+    );
+    return updatedManager; // This will now handle the proper return type
   }
 
   @Get(':id/firms')

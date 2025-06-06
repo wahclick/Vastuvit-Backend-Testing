@@ -17,6 +17,7 @@ import { FirmsDocument } from 'src/firms/schemas/firms.schema';
 import * as bcrypt from 'bcrypt'; // or bcryptjs
 import { RanksService } from 'src/ranks/ranks.service';
 import { DesignationsService } from 'src/designations/designations.service';
+import { UpdateManagerDto } from './dto/update-manager.dto';
 import * as fs from 'fs';
 import * as path from 'path';
 
@@ -169,6 +170,130 @@ export class ManagersService {
   async getFirmsByManagerId(managerId: string): Promise<any> {
     // Populate the ownedFirms to get firm details
     return this.managerModel.findById(managerId).populate('ownedFirms').exec();
+  }
+
+  // Fix the updateManager method return type
+  async updateManager(
+    id: string,
+    updateManagerDto: UpdateManagerDto,
+  ): Promise<Manager | null> {
+    // Changed from Promise<Manager> to Promise<Manager | null>
+    // Handle special $push operation for salary history
+    if (updateManagerDto.$push?.salaryHistory) {
+      const manager = await this.managerModel.findById(id);
+      if (!manager) {
+        throw new NotFoundException('Manager not found');
+      }
+
+      // Get current salary history
+      let salaryHistory = manager.salaryHistory || [];
+
+      // Add new entry
+      const newEntry = updateManagerDto.$push.salaryHistory;
+      salaryHistory.push(newEntry);
+
+      // Sort by date
+      salaryHistory.sort((a, b) => {
+        const [aDay, aMonth, aYear] = a.date.split('/');
+        const [bDay, bMonth, bYear] = b.date.split('/');
+        const dateA = new Date(
+          parseInt(aYear),
+          parseInt(aMonth) - 1,
+          parseInt(aDay),
+        );
+        const dateB = new Date(
+          parseInt(bYear),
+          parseInt(bMonth) - 1,
+          parseInt(bDay),
+        );
+        return dateA.getTime() - dateB.getTime();
+      });
+
+      // Update previous values
+      for (let i = 0; i < salaryHistory.length; i++) {
+        salaryHistory[i].previous =
+          i === 0 ? '0' : salaryHistory[i - 1].amount.toString();
+      }
+
+      // Update with new salary history and current salary
+      const updateData = {
+        salaryHistory: salaryHistory,
+        historyLength: salaryHistory.length,
+        salary: salaryHistory[salaryHistory.length - 1].amount,
+      };
+
+      // Remove $push from DTO and add other updates
+      delete updateManagerDto.$push;
+      Object.assign(updateData, updateManagerDto);
+
+      const updatedManager = await this.managerModel
+        .findByIdAndUpdate(id, updateData, { new: true })
+        .exec();
+
+      if (!updatedManager) {
+        throw new NotFoundException('Manager not found');
+      }
+
+      return updatedManager;
+    }
+
+    // Handle regular salary updates
+    if (updateManagerDto.salary) {
+      const manager = await this.managerModel.findById(id);
+      if (!manager) {
+        throw new NotFoundException('Manager not found');
+      }
+
+      // If this is a salary change, update salary history
+      if (manager.salary !== updateManagerDto.salary) {
+        let salaryHistory = manager.salaryHistory || [];
+
+        // Create new salary entry
+        const newEntry = {
+          amount: updateManagerDto.salary,
+          date: new Date().toLocaleDateString('en-GB'),
+          changeType: 'increment' as const,
+          previous: manager.salary?.toString() || '0',
+        };
+
+        salaryHistory.push(newEntry);
+
+        // Sort and update previous values
+        salaryHistory.sort((a, b) => {
+          const [aDay, aMonth, aYear] = a.date.split('/');
+          const [bDay, bMonth, bYear] = b.date.split('/');
+          const dateA = new Date(
+            parseInt(aYear),
+            parseInt(aMonth) - 1,
+            parseInt(aDay),
+          );
+          const dateB = new Date(
+            parseInt(bYear),
+            parseInt(bMonth) - 1,
+            parseInt(bDay),
+          );
+          return dateA.getTime() - dateB.getTime();
+        });
+
+        for (let i = 0; i < salaryHistory.length; i++) {
+          salaryHistory[i].previous =
+            i === 0 ? '0' : salaryHistory[i - 1].amount.toString();
+        }
+
+        updateManagerDto.salaryHistory = salaryHistory;
+        updateManagerDto.historyLength = salaryHistory.length;
+      }
+    }
+
+    const updatedManager = await this.managerModel
+      .findByIdAndUpdate(id, updateManagerDto, { new: true })
+      .exec();
+
+    if (!updatedManager) {
+      throw new NotFoundException('Manager not found');
+    }
+
+    return updatedManager;
   }
 
   async findAllByFirmId(firmId: string): Promise<ManagerDocument[]> {
