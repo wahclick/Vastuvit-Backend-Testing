@@ -1,4 +1,4 @@
-// tasks.service.ts
+// tasks.service.ts - UPDATED to manually fetch rankId without schema changes
 import {
   Injectable,
   NotFoundException,
@@ -14,11 +14,25 @@ import { UpdateTaskDto } from './dto/update-task.dto';
 export class TasksService {
   constructor(
     @InjectModel('Task') private taskModel: Model<TaskDocument>,
-    @InjectModel('Crew') private crewModel: Model<any>, // Properly inject the Crew model
+    @InjectModel('Crew') private crewModel: Model<any>,
+    @InjectModel('Manager') private managerModel: Model<any>,
+    @InjectModel('Rank') private rankModel: Model<any>, // Add rank model
   ) {}
 
   async create(createTaskDto: CreateTaskDto): Promise<Task> {
     try {
+      // If assignedBy is not provided, default to userId (the creator)
+      if (!createTaskDto.assignedBy) {
+        createTaskDto.assignedBy = createTaskDto.userId;
+        createTaskDto.assignedByModel = 'Manager'; // Default to Manager
+      }
+
+      // If assignedByModel is not provided, determine it
+      if (!createTaskDto.assignedByModel && createTaskDto.assignedBy) {
+        const assignedByModel = await this.determineAssignedByModel(createTaskDto.assignedBy);
+        createTaskDto.assignedByModel = assignedByModel;
+      }
+
       const createdTask = new this.taskModel(createTaskDto);
       return await createdTask.save();
     } catch (error) {
@@ -29,15 +43,86 @@ export class TasksService {
     }
   }
 
+  // Helper method to determine if assignedBy is a Manager or Crew
+  private async determineAssignedByModel(assignedById: string): Promise<string> {
+    try {
+      // First check if it's a manager
+      const manager = await this.managerModel.findById(assignedById);
+      if (manager) {
+        return 'Manager';
+      }
+
+      // Then check if it's a crew member
+      const crew = await this.crewModel.findById(assignedById);
+      if (crew) {
+        return 'Crew';
+      }
+
+      // Default to Manager if not found (shouldn't happen in normal cases)
+      return 'Manager';
+    } catch (error) {
+      console.error('Error determining assigned by model:', error);
+      return 'Manager'; // Default fallback
+    }
+  }
+
+  // Helper method to enrich user with rank data
+  private async enrichUserWithRank(user: any): Promise<any> {
+    if (!user) return user;
+    
+    try {
+      // If user has rankId, fetch the rank details
+      if (user.rankId) {
+        const rank = await this.rankModel.findById(user.rankId).select('name').exec();
+        if (rank) {
+          return {
+            ...user.toObject(),
+            rankId: {
+              _id: rank._id,
+              name: rank.name
+            }
+          };
+        }
+      }
+      
+      // Return user as-is if no rankId or rank not found
+      return user.toObject ? user.toObject() : user;
+    } catch (error) {
+      console.error('Error enriching user with rank:', error);
+      return user.toObject ? user.toObject() : user;
+    }
+  }
+
   async findAll(firmId: Types.ObjectId | string): Promise<Task[]> {
     try {
-      return this.taskModel
+      const tasks = await this.taskModel
         .find({ firmId })
-        .populate('userId', 'name email') // Manager has name directly
+        .populate('userId', 'name email') // Manager who created
         .populate('projectId', 'name')
-        .populate('assignTo', 'name email') // Crew
-        .populate('taskCheckBy', 'name email') // Crew
+        .populate('assignTo', 'name email') // Crew assigned to
+        .populate('taskCheckBy', 'name email') // Crew who checked
         .exec();
+
+      // Manually populate assignedBy based on assignedByModel - INCLUDE RANKID
+      for (const task of tasks) {
+        if (task.assignedBy && task.assignedByModel) {
+          if (task.assignedByModel === 'Manager') {
+            const manager = await this.managerModel
+              .findById(task.assignedBy)
+              .select('name email rankId')
+              .exec();
+            (task as any).assignedBy = await this.enrichUserWithRank(manager);
+          } else if (task.assignedByModel === 'Crew') {
+            const crew = await this.crewModel
+              .findById(task.assignedBy)
+              .select('name email rankId')
+              .exec();
+            (task as any).assignedBy = await this.enrichUserWithRank(crew);
+          }
+        }
+      }
+
+      return tasks;
     } catch (error) {
       console.error('Error finding tasks:', error);
       throw new InternalServerErrorException(
@@ -50,15 +135,32 @@ export class TasksService {
     try {
       const task = await this.taskModel
         .findById(id)
-        .populate('userId', 'name email') // Manager
+        .populate('userId', 'name email') // Manager who created
         .populate('firmId', 'name')
         .populate('projectId', 'name')
-        .populate('assignTo', 'name email') // Crew
-        .populate('taskCheckBy', 'name email') // Crew
+        .populate('assignTo', 'name email') // Crew assigned to
+        .populate('taskCheckBy', 'name email') // Crew who checked
         .exec();
   
       if (!task) {
         throw new NotFoundException(`Task with ID ${id} not found`);
+      }
+
+      // Manually populate assignedBy based on assignedByModel - INCLUDE RANKID
+      if (task.assignedBy && task.assignedByModel) {
+        if (task.assignedByModel === 'Manager') {
+          const manager = await this.managerModel
+            .findById(task.assignedBy)
+            .select('name email rankId')
+            .exec();
+          (task as any).assignedBy = await this.enrichUserWithRank(manager);
+        } else if (task.assignedByModel === 'Crew') {
+          const crew = await this.crewModel
+            .findById(task.assignedBy)
+            .select('name email rankId')
+            .exec();
+          (task as any).assignedBy = await this.enrichUserWithRank(crew);
+        }
       }
   
       return task;
@@ -75,12 +177,33 @@ export class TasksService {
   
   async findByProject(projectId: Types.ObjectId | string): Promise<Task[]> {
     try {
-      return this.taskModel
+      const tasks = await this.taskModel
         .find({ projectId })
-        .populate('userId', 'name email') // Manager
-        .populate('assignTo', 'name email') // Crew
-        .populate('taskCheckBy', 'name email') // Crew
+        .populate('userId', 'name email') // Manager who created
+        .populate('assignTo', 'name email') // Crew assigned to
+        .populate('taskCheckBy', 'name email') // Crew who checked
         .exec();
+
+      // Manually populate assignedBy based on assignedByModel - INCLUDE RANKID
+      for (const task of tasks) {
+        if (task.assignedBy && task.assignedByModel) {
+          if (task.assignedByModel === 'Manager') {
+            const manager = await this.managerModel
+              .findById(task.assignedBy)
+              .select('name email rankId')
+              .exec();
+            (task as any).assignedBy = await this.enrichUserWithRank(manager);
+          } else if (task.assignedByModel === 'Crew') {
+            const crew = await this.crewModel
+              .findById(task.assignedBy)
+              .select('name email rankId')
+              .exec();
+            (task as any).assignedBy = await this.enrichUserWithRank(crew);
+          }
+        }
+      }
+
+      return tasks;
     } catch (error) {
       console.error('Error finding tasks by project:', error);
       throw new InternalServerErrorException(
@@ -91,12 +214,33 @@ export class TasksService {
   
   async findByAssignee(assignTo: Types.ObjectId | string): Promise<Task[]> {
     try {
-      return this.taskModel
+      const tasks = await this.taskModel
         .find({ assignTo })
-        .populate('userId', 'name email') // Manager
+        .populate('userId', 'name email') // Manager who created
         .populate('projectId', 'name')
-        .populate('taskCheckBy', 'name email') // Crew
+        .populate('taskCheckBy', 'name email') // Crew who checked
         .exec();
+
+      // Manually populate assignedBy based on assignedByModel - INCLUDE RANKID
+      for (const task of tasks) {
+        if (task.assignedBy && task.assignedByModel) {
+          if (task.assignedByModel === 'Manager') {
+            const manager = await this.managerModel
+              .findById(task.assignedBy)
+              .select('name email rankId')
+              .exec();
+            (task as any).assignedBy = await this.enrichUserWithRank(manager);
+          } else if (task.assignedByModel === 'Crew') {
+            const crew = await this.crewModel
+              .findById(task.assignedBy)
+              .select('name email rankId')
+              .exec();
+            (task as any).assignedBy = await this.enrichUserWithRank(crew);
+          }
+        }
+      }
+
+      return tasks;
     } catch (error) {
       console.error('Error finding tasks by assignee:', error);
       throw new InternalServerErrorException(
@@ -119,14 +263,33 @@ export class TasksService {
           status: status, // 'complete'
           remarkStatus: remarkStatus, // 'pending'
         })
-        .populate('assignTo', 'name email') // Crew
-        .populate('userId', 'name email') // Manager
+        .populate('assignTo', 'name email') // Crew assigned to
+        .populate('userId', 'name email') // Manager who created
         .populate('projectId', 'name')
         .sort({
           priority: 1, // Critical first
           updatedAt: -1, // Recent first
         })
         .exec();
+
+      // Manually populate assignedBy based on assignedByModel - INCLUDE RANKID
+      for (const task of tasks) {
+        if (task.assignedBy && task.assignedByModel) {
+          if (task.assignedByModel === 'Manager') {
+            const manager = await this.managerModel
+              .findById(task.assignedBy)
+              .select('name email rankId')
+              .exec();
+            (task as any).assignedBy = await this.enrichUserWithRank(manager);
+          } else if (task.assignedByModel === 'Crew') {
+            const crew = await this.crewModel
+              .findById(task.assignedBy)
+              .select('name email rankId')
+              .exec();
+            (task as any).assignedBy = await this.enrichUserWithRank(crew);
+          }
+        }
+      }
   
       console.log(`Found ${tasks.length} pending review tasks`);
       return tasks;
@@ -135,19 +298,42 @@ export class TasksService {
       throw new Error(`Failed to fetch pending review tasks: ${error.message}`);
     }
   }
+
   async update(id: string, updateTaskDto: UpdateTaskDto): Promise<Task> {
     try {
+      // If updating assignedBy, also update assignedByModel if not provided
+      if (updateTaskDto.assignedBy && !updateTaskDto.assignedByModel) {
+        updateTaskDto.assignedByModel = await this.determineAssignedByModel(updateTaskDto.assignedBy);
+      }
+
       const updatedTask = await this.taskModel
         .findByIdAndUpdate(id, updateTaskDto, { new: true })
-        .populate('userId', 'name email') // Manager
+        .populate('userId', 'name email') // Manager who created
         .populate('firmId', 'name')
         .populate('projectId', 'name')
-        .populate('assignTo', 'name email') // Crew
-        .populate('taskCheckBy', 'name email') // Crew
+        .populate('assignTo', 'name email') // Crew assigned to
+        .populate('taskCheckBy', 'name email') // Crew who checked
         .exec();
   
       if (!updatedTask) {
         throw new NotFoundException(`Task with ID ${id} not found`);
+      }
+
+      // Manually populate assignedBy based on assignedByModel - INCLUDE RANKID
+      if (updatedTask.assignedBy && updatedTask.assignedByModel) {
+        if (updatedTask.assignedByModel === 'Manager') {
+          const manager = await this.managerModel
+            .findById(updatedTask.assignedBy)
+            .select('name email rankId')
+            .exec();
+          (updatedTask as any).assignedBy = await this.enrichUserWithRank(manager);
+        } else if (updatedTask.assignedByModel === 'Crew') {
+          const crew = await this.crewModel
+            .findById(updatedTask.assignedBy)
+            .select('name email rankId')
+            .exec();
+          (updatedTask as any).assignedBy = await this.enrichUserWithRank(crew);
+        }
       }
   
       return updatedTask;
@@ -244,15 +430,51 @@ export class TasksService {
   
       const tasks = await this.taskModel
         .find(query)
-        .populate('userId', 'name email') // Manager
-        
-        .populate('assignTo', 'name email') // Crew
-        .populate('taskCheckBy', 'name email') // Crew
+        .populate('userId', 'name email') // Manager who created
+        .populate('assignTo', 'name email') // Crew assigned to
+        .populate('taskCheckBy', 'name email') // Crew who checked
         .exec();
+
+      // Manually populate assignedBy based on assignedByModel - INCLUDE RANKID
+      for (const task of tasks) {
+        if (task.assignedBy && task.assignedByModel) {
+          if (task.assignedByModel === 'Manager') {
+            const manager = await this.managerModel
+              .findById(task.assignedBy)
+              .select('name email rankId')
+              .exec();
+            (task as any).assignedBy = await this.enrichUserWithRank(manager);
+          } else if (task.assignedByModel === 'Crew') {
+            const crew = await this.crewModel
+              .findById(task.assignedBy)
+              .select('name email rankId')
+              .exec();
+            (task as any).assignedBy = await this.enrichUserWithRank(crew);
+          }
+        }
+      }
   
       return tasks;
     } catch (error) {
       console.error('Error finding tasks by firm and assignee:', error);
       throw new Error(`Failed to find tasks: ${error.message}`);
     }
-  }}
+  }
+  async findByFirmAndAssigner(firmId: string, assignerId: string, status?: string) {
+    const query: any = {
+      firmId: new Types.ObjectId(firmId),
+      assignedBy: new Types.ObjectId(assignerId)
+    };
+    
+    if (status) {
+      query.status = status;
+    }
+  
+    return this.taskModel.find(query)
+      .populate('assignTo', 'name')
+      .populate('assignedBy', 'name')
+      .populate('projectId', 'name code')
+      .populate('userId', 'name')
+      .exec();
+  }
+}

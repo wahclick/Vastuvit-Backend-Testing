@@ -1,71 +1,84 @@
-// update-task.dto.ts
+// dto/update-task.dto.ts - UPDATED to include assignedBy
+import { PartialType } from '@nestjs/mapped-types';
+import { CreateTaskDto } from './create-task.dto';
 import {
-  IsString,
   IsOptional,
-  IsMongoId,
   IsEnum,
   IsDateString,
+  IsString,
+  IsMongoId,
 } from '@nestjs/class-validator';
-import { Types } from 'mongoose';
+import { Transform } from 'class-transformer';
 
-export class UpdateTaskDto {
-  @IsMongoId()
+export class UpdateTaskDto extends PartialType(CreateTaskDto) {
   @IsOptional()
-  userId?: Types.ObjectId;
-
   @IsMongoId()
-  @IsOptional()
-  firmId?: Types.ObjectId;
+  userId?: string;
 
+  @IsOptional()
   @IsMongoId()
-  @IsOptional()
-  projectId?: Types.ObjectId;
+  firmId?: string;
 
+  @IsOptional()
+  @IsMongoId()
+  projectId?: string;
+
+  @IsOptional()
   @IsString()
-  @IsOptional()
   assignerRemark?: string;
 
-  @IsString()
   @IsOptional()
+  @IsString()
   timeTaken?: string;
 
+  @IsOptional()
   @IsMongoId()
-  @IsOptional()
-  assignTo?: Types.ObjectId;
+  assignTo?: string;
 
-  @IsEnum(['low', 'medium', 'high'])
+  // ADD THESE NEW FIELDS
   @IsOptional()
+  @IsMongoId()
+  assignedBy?: string; // Who actually assigned the task
+
+  @IsOptional()
+  @IsEnum(['Manager', 'Crew'])
+  assignedByModel?: string; // Whether assignedBy is Manager or Crew
+
+  @IsOptional()
+  @IsEnum(['low', 'medium', 'high'])
   priority?: string;
 
-  @IsDateString()
   @IsOptional()
-  startDate?: Date;
-
   @IsDateString()
-  @IsOptional()
-  endDate?: Date;
+  @Transform(({ value }) => (value ? new Date(value).toISOString() : value))
+  startDate?: string;
 
+  @IsOptional()
+  @IsDateString()
+  @Transform(({ value }) => (value ? new Date(value).toISOString() : value))
+  endDate?: string;
+
+  @IsOptional()
   @IsString()
-  @IsOptional()
   remarks?: string;
 
-  @IsString()
   @IsOptional()
+  @IsString()
   timeLimit?: string;
 
-  @IsEnum(['pending', 'in-progress', 'completed', 'cancelled'])
   @IsOptional()
+  @IsEnum(['pending', 'in-progress', 'completed', 'cancelled'])
   status?: string;
 
+  @IsOptional()
   @IsMongoId()
-  @IsOptional()
-  taskCheckBy?: Types.ObjectId;
+  taskCheckBy?: string;
 
-  @IsEnum(['approved', 'rejected', 'pending'])
   @IsOptional()
+  @IsEnum(['approved', 'rejected', 'pending'])
   remarkStatus?: string;
 
-  @IsString()
   @IsOptional()
-  metadata?: string; // JSON string for additional fields
+  @IsString()
+  metadata?: string;
 }

@@ -7,6 +7,7 @@ import { Task, TaskSchema } from './schemas/tasks.schema';
 import { CrewSchema, Crew } from 'src/crew/schema/crew.schema';
 import { Manager, ManagerSchema } from 'src/managers/schemas/manager.schema'; // Add this
 import { Firms, FirmsSchema } from 'src/firms/schemas/firms.schema'; // Add this
+import { Rank, RankSchema } from 'src/ranks/schema/ranks.schema';
 import { Project, ProjectSchema } from 'src/projects/schemas/projects.schema'; // Add this
 
 @Module({
@@ -17,6 +18,7 @@ import { Project, ProjectSchema } from 'src/projects/schemas/projects.schema'; /
       { name: Manager.name, schema: ManagerSchema }, // Add this
       { name: Firms.name, schema: FirmsSchema }, // Add this
       { name: Project.name, schema: ProjectSchema }, // Add this
+      { name: Rank.name, schema: RankSchema }, // Add this line
     ]),
   ],
   controllers: [TasksController],

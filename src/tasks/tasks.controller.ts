@@ -33,9 +33,13 @@ export class TasksController {
   async findPendingReviewTasks(
     @Query('firmId') firmId: string,
     @Query('status') status: string = 'complete',
-    @Query('remarkStatus') remarkStatus: string = 'pending'
+    @Query('remarkStatus') remarkStatus: string = 'pending',
   ) {
-    return this.tasksService.findPendingReviewTasks(firmId, status, remarkStatus);
+    return this.tasksService.findPendingReviewTasks(
+      firmId,
+      status,
+      remarkStatus,
+    );
   }
 
   // MOVE ALL SPECIFIC ROUTES BEFORE PARAMETERIZED ROUTES
@@ -48,10 +52,14 @@ export class TasksController {
   async findByAssigneeAndFirm(
     @Param('assigneeId') assigneeId: string,
     @Query('firmId') firmId: string,
-    @Query('status') status?: string
+    @Query('status') status?: string,
   ) {
     if (firmId) {
-      return this.tasksService.findByFirmAndAssignee(firmId, assigneeId, status);
+      return this.tasksService.findByFirmAndAssignee(
+        firmId,
+        assigneeId,
+        status,
+      );
     }
     return this.tasksService.findByAssignee(new Types.ObjectId(assigneeId));
   }
@@ -88,5 +96,13 @@ export class TasksController {
       remarkStatus,
       new Types.ObjectId(taskCheckBy),
     );
+  }
+  @Get('assigned-by/:assignerId')
+  findByAssignerAndFirm(
+    @Param('assignerId') assignerId: string,
+    @Query('firmId') firmId: string,
+    @Query('status') status?: string,
+  ) {
+    return this.tasksService.findByFirmAndAssigner(firmId, assignerId, status);
   }
 }

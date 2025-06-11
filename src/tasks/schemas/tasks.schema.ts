@@ -1,4 +1,4 @@
-// MODIFIED: tasks.schema.ts in NestJS backend to support metadata
+// tasks.schema.ts - UPDATED to include assignedBy
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document, Schema as MongooseSchema, Types } from 'mongoose';
 
@@ -23,6 +23,18 @@ export class Task {
 
   @Prop({ type: MongooseSchema.Types.ObjectId, ref: 'Crew' })
   assignTo: Types.ObjectId;
+
+  // ADD THIS NEW FIELD - Who actually assigned the task (could be manager or crew)
+  @Prop({ type: MongooseSchema.Types.ObjectId, refPath: 'assignedByModel' })
+  assignedBy: Types.ObjectId;
+
+  // ADD THIS FIELD - To know if assignedBy refers to Manager or Crew
+  @Prop({ 
+    type: String, 
+    enum: ['Manager', 'Crew'], 
+    required: function() { return this.assignedBy != null; } 
+  })
+  assignedByModel: string;
 
   @Prop({ enum: ['low', 'medium', 'high'], default: 'medium' })
   priority: string;
