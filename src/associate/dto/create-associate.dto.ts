@@ -1,91 +1,104 @@
-import {
-  IsString,
-  IsEmail,
-  IsNotEmpty,
-  IsOptional,
-  ValidateNested,
+import { 
+  IsString, 
+  IsEmail, 
+  IsOptional, 
+  ValidateNested, 
+  IsEnum,
+  IsMongoId,
   Matches,
+  IsNotEmpty,
+  IsObject
 } from '@nestjs/class-validator';
-import { Type } from 'class-transformer';
+import { Type, Transform } from 'class-transformer';
 
 class AddressDto {
   @IsOptional()
   @IsString()
   street?: string;
 
-  @IsNotEmpty()
   @IsString()
+  @IsNotEmpty()
   city: string;
 
-  @IsNotEmpty()
   @IsString()
+  @IsNotEmpty()
   state: string;
 
-  @IsNotEmpty()
   @IsString()
+  @IsNotEmpty()
   country: string;
 }
 
 class BankDetailsDto {
-  @IsNotEmpty()
   @IsString()
+  @IsNotEmpty()
   bankName: string;
 
-  @IsNotEmpty()
   @IsString()
+  @IsNotEmpty()
   accountName: string;
 
-  @IsNotEmpty()
   @IsString()
+  @IsNotEmpty()
   accountNumber: string;
 
-  @IsNotEmpty()
   @IsString()
+  @IsNotEmpty()
+  @Transform(({ value }) => value.toUpperCase())
   ifscCode: string;
 }
 
 export class CreateAssociateDto {
-  @IsNotEmpty()
   @IsString()
+  @IsMongoId({ message: 'User ID must be a valid MongoDB ObjectId' })
   user_id: string;
 
-  @IsNotEmpty()
   @IsString()
+  @IsMongoId({ message: 'Firm ID must be a valid MongoDB ObjectId' })
   firm_id: string;
 
-  @IsNotEmpty()
   @IsString()
+  @IsNotEmpty()
   prefix: string;
 
-  @IsNotEmpty()
   @IsString()
+  @IsNotEmpty()
+  @Transform(({ value }) => value.trim())
   firstName: string;
 
-  @IsNotEmpty()
   @IsString()
+  @IsNotEmpty()
+  @Transform(({ value }) => value.trim())
   lastName: string;
 
-  @IsNotEmpty()
+  @IsString()
   @Matches(/^\d{10}$/, { message: 'Telephone must be 10 digits' })
   telephone: string;
 
   @IsOptional()
+  @IsString()
   @Matches(/^\d{10}$/, { message: 'Additional telephone must be 10 digits' })
   additionalTelephone?: string;
 
-  @IsNotEmpty()
-  @IsEmail()
+  @IsEmail({}, { message: 'Invalid email format' })
+  @Transform(({ value }) => value.toLowerCase())
   email: string;
 
   @ValidateNested()
   @Type(() => AddressDto)
+  @IsObject()
   address: AddressDto;
 
   @ValidateNested()
   @Type(() => BankDetailsDto)
+  @IsObject()
   bankDetails: BankDetailsDto;
 
-  @IsNotEmpty()
   @IsString()
+  @IsNotEmpty()
   type: string;
+
+  @IsOptional()
+  @IsEnum(['active', 'inactive', 'suspended'])
+  status?: string;
 }

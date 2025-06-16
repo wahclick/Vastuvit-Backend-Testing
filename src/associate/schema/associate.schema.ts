@@ -3,6 +3,36 @@ import { Document, Types } from 'mongoose';
 
 export type AssociateDocument = Associate & Document;
 
+// Project assignment sub-schema - NEW ADDITION
+@Schema({ _id: false })
+export class ProjectAssignment {
+  @Prop({ type: Types.ObjectId, ref: 'Project', required: true })
+  projectId: Types.ObjectId;
+
+  @Prop({ required: true })
+  totalAmount: number;
+
+  @Prop()
+  remarks?: string;
+
+  @Prop({ required: true })
+  areaSqMtr: number; // area in square meters
+
+  @Prop({ required: true })
+  areaSqFt: number; // area in square feet
+
+  @Prop({ required: true })
+  rate: number; // rate per unit
+
+  @Prop({ type: Date, default: Date.now })
+  assignedAt: Date;
+
+  @Prop({ type: Boolean, default: true })
+  isActive: boolean;
+}
+
+export const ProjectAssignmentSchema = SchemaFactory.createForClass(ProjectAssignment);
+
 @Schema({ timestamps: true })
 export class Associate {
   @Prop({ type: Types.ObjectId, ref: 'Manager', required: true })
@@ -99,15 +129,19 @@ export class Associate {
     default: 'active',
   })
   status: string;
+
+  // NEW ADDITION - Project assignments array
+  @Prop({ type: [ProjectAssignmentSchema], default: [] })
+  projectAssignments: ProjectAssignment[];
 }
 
 export const AssociateSchema = SchemaFactory.createForClass(Associate);
 
+// Keep your existing pre-save middleware
 AssociateSchema.pre('save', function (next) {
   if (this.prefix && this.firstName && this.lastName) {
     this.fullName = `${this.prefix} ${this.firstName} ${this.lastName}`;
   }
-
   if (
     this.address?.street &&
     this.address?.city &&
@@ -116,6 +150,5 @@ AssociateSchema.pre('save', function (next) {
   ) {
     this.address.fullAddress = `${this.address.street}, ${this.address.city}, ${this.address.state}, ${this.address.country}`;
   }
-
   next();
 });

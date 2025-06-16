@@ -2,6 +2,7 @@ import {
   Injectable,
   InternalServerErrorException,
   NotFoundException,
+  BadRequestException
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Firms, FirmsDocument } from './schemas/firms.schema';
@@ -403,5 +404,55 @@ export class FirmsService {
       throw new NotFoundException(`Firm with id ${id} not found`);
     }
     return firm.holiday_settings?.[year] || {};
+  }
+  private getDefaultPrintPrices() {
+    const sizes = ['A4', 'A3', 'A2', 'A1', 'A0'];
+    const types = ['B/W', 'Color'];
+    
+    return sizes.flatMap(size => 
+      types.map(type => ({ printSize: size, printType: type, cost: 0 }))
+    );
+  }
+  
+  // Update specific print price - CLEAN VERSION
+  async updateSpecificPrintPrice(id: string, printSize: string, printType: string, cost: number): Promise<any> {
+    if (!id || cost < 0) {
+      throw new BadRequestException('Valid firm ID and non-negative cost required');
+    }
+  
+    const firm = await this.firmsModel.findById(id);
+    if (!firm) {
+      throw new NotFoundException(`Firm not found`);
+    }
+  
+    const printPrices = (firm as any).printPrice || this.getDefaultPrintPrices();
+    const priceIndex = printPrices.findIndex(
+      (p: any) => p.printSize === printSize && p.printType === printType
+    );
+  
+    if (priceIndex !== -1) {
+      printPrices[priceIndex].cost = cost;
+    } else {
+      printPrices.push({ printSize, printType, cost });
+    }
+  
+    return this.firmsModel.findByIdAndUpdate(id, { printPrice: printPrices }, { new: true });
+  }
+  
+  // Get print price settings - CLEAN VERSION
+  async getPrintPriceSettings(id: string): Promise<any> {
+    const firm = await this.firmsModel.findById(id);
+    if (!firm) throw new NotFoundException('Firm not found');
+    
+    return (firm as any).printPrice || this.getDefaultPrintPrices();
+  }
+  
+  // Bulk update - CLEAN VERSION
+  async updatePrintPriceSettings(id: string, { printPrices }: any): Promise<any> {
+    if (!Array.isArray(printPrices)) {
+      throw new BadRequestException('Print prices must be an array');
+    }
+  
+    return this.firmsModel.findByIdAndUpdate(id, { printPrice: printPrices }, { new: true });
   }
 }

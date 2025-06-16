@@ -40,6 +40,7 @@ export class FirmsController {
   async getLeaveSettings(@Param('id') id: string) {
     return this.firmsService.getLeaveSettings(id);
   }
+
   @Patch(':id/office-timing')
   async updateOfficeTiming(@Param('id') id: string, @Body() data: any) {
     return this.firmsService.updateOfficeTiming(id, data);
@@ -49,6 +50,7 @@ export class FirmsController {
   async getOfficeTiming(@Param('id') id: string) {
     return this.firmsService.getOfficeTiming(id);
   }
+
   @Patch(':id/profit-settings')
   async updateProfitSettings(@Param('id') id: string, @Body() data: any) {
     return this.firmsService.updateProfitPercentage(id, data);
@@ -69,6 +71,7 @@ export class FirmsController {
   async getThresholdSettings(@Param('id') id: string) {
     return this.firmsService.getThresholdSettings(id);
   }
+
   @Patch(':id/overtime-settings')
   async updateOvertimeSettings(@Param('id') id: string, @Body() data: any) {
     return this.firmsService.updateOvertimeSettings(id, data);
@@ -78,6 +81,7 @@ export class FirmsController {
   async getOvertimeSettings(@Param('id') id: string) {
     return this.firmsService.getOvertimeSettings(id);
   }
+
   // Project Code settings endpoints
   @Patch(':id/project-code-settings')
   async updateProjectCodeSettings(@Param('id') id: string, @Body() data: any) {
@@ -88,6 +92,7 @@ export class FirmsController {
   async getProjectCodeSettings(@Param('id') id: string) {
     return this.firmsService.getProjectCodeSettings(id);
   }
+
   @Get(':id/holidays/:year')
   async getHolidays(@Param('id') id: string, @Param('year') year: number) {
     return this.firmsService.getHolidays(id, year);
@@ -147,5 +152,36 @@ export class FirmsController {
     @Body() data: any,
   ) {
     return this.firmsService.updateHolidayTotals(id, year, data);
+  }
+
+  // PRINT PRICE ENDPOINTS - FIXED (No duplicates)
+  
+  @Get(':id/print-prices')
+  async getPrintPrices(@Param('id') id: string) {
+    return this.firmsService.getPrintPriceSettings(id);
+  }
+
+  @Patch(':id/print-prices')
+  async updateBulkPrintPrices(@Param('id') id: string, @Body() data: any) {
+    return this.firmsService.updatePrintPriceSettings(id, data);
+  }
+
+  @Post(':id/print-prices')
+  async createOrUpdatePrintPrice(
+    @Param('id') id: string,
+    @Body() data: { printSize: string; printType: string; cost: number },
+  ) {
+    const { printSize, printType, cost } = data;
+    return this.firmsService.updateSpecificPrintPrice(id, printSize, printType, cost);
+  }
+
+  @Put(':id/print-prices/:size/:type')
+  async updateSpecificPrintPrice(
+    @Param('id') id: string,
+    @Param('size') size: string,
+    @Param('type') type: string,
+    @Body('cost') cost: number,
+  ) {
+    return this.firmsService.updateSpecificPrintPrice(id, size, type, cost);
   }
 }

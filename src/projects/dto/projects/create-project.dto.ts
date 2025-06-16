@@ -11,6 +11,8 @@ import {
   ValidateNested,
   IsObject,
   IsEnum,
+  Max,
+  Min,
 } from '@nestjs/class-validator';
 import { Type } from 'class-transformer';
 import { Types } from 'mongoose';
@@ -236,4 +238,23 @@ export class CreateProjectDto {
   @IsBoolean()
   @IsOptional()
   isEnabled?: boolean = true;
+
+  @IsOptional()
+  @IsMongoId()
+  referralId?: Types.ObjectId;
+
+  @IsOptional()
+  @IsString()
+  referralName?: string;
+
+  @IsOptional()
+  @IsNumber()
+  @Min(0)
+  referralAmount?: number;
+
+  @IsOptional()
+  @IsNumber()
+  @Min(0)  
+  @Max(100)
+  referralPercentage?: number;
 }

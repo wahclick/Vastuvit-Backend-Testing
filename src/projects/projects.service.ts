@@ -933,4 +933,41 @@ export class ProjectsService {
       );
     }
   }
+  async getProjectReferral(projectId: string) {
+    const project = await this.projectModel
+      .findById(projectId)
+      .populate(
+        'referralId',
+        'fullName email telephone referralAmount referralPercentage',
+      )
+      .exec();
+
+    if (!project) {
+      throw new NotFoundException(`Project with ID ${projectId} not found`);
+    }
+
+    return {
+      projectId: project._id,
+      projectName: project.name,
+      referral: project.referralId || null,
+    };
+  }
+  async findByReferral(referralId: string) {
+    try {
+      const projects = await this.projectModel
+        .find({
+          referralId: new Types.ObjectId(referralId),
+          isEnabled: true,
+        })
+        .populate('clientId', 'name email')
+        .populate('referralId', 'fullName referralPercentage')
+        .exec();
+
+      return projects;
+    } catch (error) {
+      throw new NotFoundException(
+        `No projects found for referral ID ${referralId}`,
+      );
+    }
+  }
 }

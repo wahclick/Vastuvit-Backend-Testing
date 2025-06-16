@@ -18,6 +18,27 @@ export enum LeaveType {
   bl = 'Bereavement Leave',
 }
 
+// Print size and type enums for better type safety
+export enum PrintSize {
+  A4 = 'A4',
+  A3 = 'A3',
+  A2 = 'A2',
+  A1 = 'A1',
+  A0 = 'A0',
+}
+
+export enum PrintType {
+  BW = 'B/W',
+  COLOR = 'Color',
+}
+
+// Interface for print pricing structure
+export interface PrintPriceItem {
+  printSize: PrintSize;
+  printType: PrintType;
+  cost: number;
+}
+
 export type FirmsDocument = Firms & Document & { _id: Types.ObjectId };
 
 @Schema({ timestamps: true })
@@ -102,6 +123,7 @@ export class Firms {
     lunchStart?: string;
     lunchEnd?: string;
   };
+
   @Prop({ type: Object, default: { percentage: 0, enabled: false } })
   profit_settings: {
     percentage: number;
@@ -114,11 +136,13 @@ export class Firms {
     percentage: number;
     enabled: boolean;
   };
+
   @Prop({ type: Object, default: { isEnabled: false, salaryper: 0 } })
   overtime_settings: {
     isEnabled: boolean;
     salaryper: number;
   };
+
   @Prop({
     type: Object,
     default: {
@@ -138,6 +162,7 @@ export class Firms {
     coin: boolean;
     clin: boolean;
   };
+
   @Prop({ type: Object, default: {} })
   holiday_settings: {
     [year: number]: {
@@ -153,6 +178,39 @@ export class Firms {
       totalworkingday?: number;
     };
   };
+
+  // NEW: Print Price settings
+  @Prop({
+    type: [Object],
+    default: [
+      // Default pricing structure for all combinations
+      { printSize: 'A4', printType: 'B/W', cost: 0 },
+      { printSize: 'A4', printType: 'Color', cost: 0 },
+      { printSize: 'A3', printType: 'B/W', cost: 0 },
+      { printSize: 'A3', printType: 'Color', cost: 0 },
+      { printSize: 'A2', printType: 'B/W', cost: 0 },
+      { printSize: 'A2', printType: 'Color', cost: 0 },
+      { printSize: 'A1', printType: 'B/W', cost: 0 },
+      { printSize: 'A1', printType: 'Color', cost: 0 },
+      { printSize: 'A0', printType: 'B/W', cost: 0 },
+      { printSize: 'A0', printType: 'Color', cost: 0 },
+    ],
+  })
+  printPrice: PrintPriceItem[];
 }
 
 export const FirmsSchema = SchemaFactory.createForClass(Firms);
+
+// Constants for frontend use
+export const typesize = [
+  { label: 'A4', value: 'A4' },
+  { label: 'A3', value: 'A3' },
+  { label: 'A2', value: 'A2' },
+  { label: 'A1', value: 'A1' },
+  { label: 'A0', value: 'A0' },
+];
+
+export const typedata = [
+  { label: 'B/W', value: 'B/W' },
+  { label: 'Color', value: 'Color' },
+];

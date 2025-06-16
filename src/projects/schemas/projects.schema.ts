@@ -4,6 +4,44 @@ import mongoose, { Document, Schema as MongooseSchema, Types } from 'mongoose';
 import { ProjectStatus } from './project-status.enum';
 
 // Measurement schema as a nested document
+
+
+@Schema({ _id: true })
+export class ProjectAssociate {
+  @Prop({ type: Types.ObjectId, auto: true })
+  _id: Types.ObjectId;
+
+  @Prop({ type: Types.ObjectId, ref: 'Associate', required: true })
+  associateId: Types.ObjectId;
+
+  @Prop({ required: true })
+  associateName: string;
+
+  @Prop({ required: true })
+  associateType: string; // "Consultant", "Contractor", etc.
+
+  @Prop({ type: Number })
+  associateAmount: number; // Fixed amount or calculated amount
+
+  @Prop({ type: Number })
+  associatePercentage: number; // If percentage-based
+
+  @Prop({ type: Number })
+  ratePerSqFt: number; // If area-based pricing
+
+  @Prop({ type: Number })
+  areaInSqFt: number; // Area assigned to this associate
+
+  @Prop({ type: String })
+  workDescription: string; // Description of work
+
+  @Prop({ type: Date, default: Date.now })
+  assignedDate: Date;
+
+  @Prop({ type: Boolean, default: true })
+  isActive: boolean;
+}
+
 class MeasurementMetric {
   @Prop({ type: Number })
   plotArea: number;
@@ -84,6 +122,7 @@ class BillingStage {
   @Prop({ type: String })
   projectRemark: string;
 }
+
 class PropertyItem {
   @Prop({ type: String, required: true })
   key: string;
@@ -125,6 +164,7 @@ export class ProjectDetails {
   updatedAt: Date;
 }
 
+  
 export type ProjectDocument = Project & Document;
 
 @Schema({ timestamps: true })
@@ -211,8 +251,24 @@ export class Project {
   @Prop({ type: [ProjectDetails], default: [] })
   projectDetails: ProjectDetails[];
 
+  @Prop({ type: MongooseSchema.Types.ObjectId, ref: 'Referral', required: false })
+  referralId: Types.ObjectId;
+  
+  @Prop({ type: String, required: false })
+  referralName: string;
+  
+  @Prop({ type: Number, required: false, min: 0 })
+  referralAmount: number;
+  
+  @Prop({ type: Number, required: false, min: 0, max: 100 })
+  referralPercentage: number;
+
+  @Prop({ type: [ProjectAssociate], default: [] })
+  associates: ProjectAssociate[];
+
   @Prop({ type: Boolean, default: true })
   isEnabled: boolean;
+  
 }
 
 export const ProjectSchema = SchemaFactory.createForClass(Project);

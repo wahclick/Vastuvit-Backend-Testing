@@ -20,8 +20,9 @@ import { AccountingModule } from './accounting/accounting.module';
 import { ReferralModule } from './referral/referral.module';
 import { AssociateModule } from './associate/associate.module';
 import { VendorModule } from './vendor/vendor.module';
-
-
+import { PrintModule } from './print/print.module';
+import { ReferralPaymentsModule } from './referral-payments/referral-payments.module';
+import { AssociatePaymentsModule } from './associate-payments/associate-payments.module';
 
 @Module({
   imports: [
@@ -29,7 +30,6 @@ import { VendorModule } from './vendor/vendor.module';
       isGlobal: true,
       envFilePath: '.env',
     }),
-
     MongooseModule.forRootAsync({
       imports: [ConfigModule],
       useFactory: (configService: ConfigService) => ({
@@ -39,7 +39,6 @@ import { VendorModule } from './vendor/vendor.module';
       }),
       inject: [ConfigService],
     }),
-
     ManagersModule,
     FirmsModule,
     AuthModule,
@@ -57,9 +56,11 @@ import { VendorModule } from './vendor/vendor.module';
     ReferralModule,
     AssociateModule,
     VendorModule,
+    PrintModule,
+    ReferralPaymentsModule,
+    AssociatePaymentsModule, // This already contains PrintService and PrintController
   ],
-
-  controllers: [AppController],
-  providers: [AppService],
+  controllers: [AppController], // Remove PrintController from here
+  providers: [AppService], // Remove PrintService from here
 })
 export class AppModule {}

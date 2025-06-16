@@ -234,4 +234,12 @@ export class ProjectsController {
   async findByFirm(@Param('firmId') firmId: string) {
     return this.projectsService.findAll(firmId);
   }
+  @Get(':id/referral')
+  async getProjectReferral(@Param('id') id: string) {
+    return this.projectsService.getProjectReferral(id);
+  }
+  @Get('referral/:referralId')
+  async getProjectsByReferral(@Param('referralId') referralId: string) {
+    return this.projectsService.findByReferral(referralId);
+  }
 }

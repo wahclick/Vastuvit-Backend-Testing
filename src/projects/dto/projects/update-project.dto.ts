@@ -230,4 +230,9 @@ export class UpdateProjectDto {
   @IsBoolean()
   @IsOptional()
   isEnabled?: boolean;
+
+
+  @IsOptional()
+  @IsMongoId()
+  referralId?: Types.ObjectId;
 }
