@@ -1,24 +1,23 @@
-import { Types } from "mongoose";
+import { Types } from 'mongoose';
 
 export class CompleteProfileDto {
-    mobile: string; // Used to find the manager
-    name: string;
-    password: string;
-    address: string;
-    profileImage?: string;
-    firmDetails: {
-      firmName: string;
-      address: {
-        buildingNumber: string;
-        streetArea: string;
-        landmark: string;
-        city: string;
-        state: string;
-        country: string;
-      };
-      numberOfEmployees?: string;
-      logo?: string;
-      user_id: Types.ObjectId;
-         
+  mobile: string; // Used to find the manager
+  name: string;
+  password: string;
+  address: string;
+  profileImage?: string;
+  firmDetails: {
+    firmName: string;
+    address: {
+      buildingNumber: string;
+      streetArea: string;
+      landmark: string;
+      city: string;
+      state: string;
+      country: string;
     };
-  }
+    numberOfEmployees?: string;
+    logo?: string;
+    user_id: Types.ObjectId;
+  };
+}
