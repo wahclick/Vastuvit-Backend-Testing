@@ -135,7 +135,7 @@ export class ReferralPaymentsService {
   ): Promise<ReferralPaymentDocument> {
     try {
       let payment: ReferralPaymentDocument;
-
+  
       // Try to find existing payment record
       try {
         payment = await this.findByProjectAndReferral(projectId, referralId);
@@ -143,91 +143,107 @@ export class ReferralPaymentsService {
         if (error instanceof NotFoundException) {
           // Auto-create the referral payment record if it doesn't exist
           console.log('Referral payment record not found, creating new one...');
-
+  
           // Fetch referral and project details
           const referral = await this.referralModel.findById(referralId);
           const project = await this.projectModel.findById(projectId);
-
+  
           if (!referral) {
             throw new NotFoundException('Referral not found');
           }
           if (!project) {
             throw new NotFoundException('Project not found');
           }
-
+  
           // Check if this referral is assigned to this project
-          if (
-            !project.referralId ||
-            project.referralId.toString() !== referralId
-          ) {
-            throw new NotFoundException(
-              'Referral is not assigned to this project',
-            );
+          if (!project.referralId || project.referralId.toString() !== referralId) {
+            throw new NotFoundException('Referral is not assigned to this project');
           }
-
-          // Use the referral data directly from the project document
+  
+          console.log('Project data:', {
+            name: project.name,
+            referralId: project.referralId,
+            referralBy: project.referralBy,
+            referralAmount: project.referralAmount,
+            userId: project.userId,
+            firmId: project.firmId
+          });
+  
+          console.log('Referral data:', {
+            fullName: referral.fullName,
+            referralPercentage: referral.referralPercentage
+          });
+  
+          // Fix the field mapping based on your actual project schema
           const createData: CreateReferralPaymentDto = {
             referralId: new Types.ObjectId(referralId),
             projectId: new Types.ObjectId(projectId),
-            userId: project.userId, // Use project's userId
-            firmId: project.firmId, // Use project's firmId
+            userId: project.userId,
+            firmId: project.firmId,
             projectName: project.name,
-            referralName: project.referralName,
-            totalReferralAmount: project.referralAmount,
-            referralPercentage: project.referralPercentage || 0,
+            // Use the correct field names from your UpdateProjectDto
+            referralName: project.referralBy || referral.fullName, // referralBy from project or fallback to referral's fullName
+            totalReferralAmount: project.referralAmount || 0, // referralAmount from project
+            referralPercentage: project.referralPercentage || referral.referralPercentage || 0, // Get from project or referral
           };
-
+  
+          console.log('Creating referral payment with data:', createData);
+  
           payment = await this.create(createData);
           console.log('Referral payment record created successfully');
         } else {
           throw error;
         }
       }
-
-      // Now proceed with adding the payment
+  
+      // Validation checks
+      if (addPaymentDto.amount <= 0) {
+        throw new BadRequestException('Payment amount must be greater than zero');
+      }
+  
+      // Calculate new totals
       const newTotalPaid = payment.totalPaidAmount + addPaymentDto.amount;
       const remainingBalance = payment.totalReferralAmount - newTotalPaid;
-
+  
       if (newTotalPaid > payment.totalReferralAmount) {
         throw new BadRequestException(
-          'Payment amount exceeds total referral amount',
+          `Payment amount (${addPaymentDto.amount}) exceeds remaining balance (${payment.totalReferralAmount - payment.totalPaidAmount})`
         );
       }
-
-      if (addPaymentDto.amount <= 0) {
-        throw new BadRequestException(
-          'Payment amount must be greater than zero',
-        );
-      }
-
+  
+      // Create payment history item
       const paymentHistoryItem = {
         _id: new Types.ObjectId(),
         amount: addPaymentDto.amount,
         paymentDate: new Date(addPaymentDto.paymentDate),
         paymentMode: addPaymentDto.paymentMode,
         balance: remainingBalance,
-        remarks: addPaymentDto.remarks,
+        remarks: addPaymentDto.remarks || '',
         createdAt: new Date(),
       };
-
+  
+      // Update payment record
       payment.paymentHistory.push(paymentHistoryItem);
       payment.totalPaidAmount = newTotalPaid;
-
+  
       // Update status if fully paid
       if (remainingBalance === 0) {
         payment.status = 'COMPLETED';
       }
-
+  
       return await payment.save();
     } catch (error) {
+      console.error('Error in addPayment:', error);
+      
       if (
         error instanceof BadRequestException ||
         error instanceof NotFoundException
       ) {
         throw error;
       }
+      
       throw new InternalServerErrorException(
-        `Failed to add payment: ${error.message}`,
+        `Failed to add payment: ${error.message}`
       );
     }
   }

@@ -1,4 +1,3 @@
-// update-project.dto.ts
 import {
   IsString,
   IsOptional,
@@ -9,6 +8,7 @@ import {
   IsArray,
   ValidateNested,
   IsObject,
+  IsEmail,
 } from '@nestjs/class-validator';
 import { Type } from 'class-transformer';
 import { Types } from 'mongoose';
@@ -231,8 +231,61 @@ export class UpdateProjectDto {
   @IsOptional()
   isEnabled?: boolean;
 
-
   @IsOptional()
   @IsMongoId()
   referralId?: Types.ObjectId;
+
+  // ========== NEW FIELDS ADDED ==========
+  
+  // Client Information Fields
+  @IsString()
+  @IsOptional()
+  clientName?: string;
+
+  @IsString()
+  @IsOptional()
+  clientAddress?: string;
+
+  @IsString()
+  @IsOptional()
+  clientCity?: string;
+
+  @IsString()
+  @IsOptional()
+  clientState?: string;
+
+  @IsString()
+  @IsOptional()
+  clientCountry?: string;
+
+  @IsEmail()
+  @IsOptional()
+  clientEmail?: string;
+
+  @IsString()
+  @IsOptional()
+  clientPhone?: string;
+
+  // Contact Person Fields
+  @IsString()
+  @IsOptional()
+  contactPerson?: string;
+
+  @IsString()
+  @IsOptional()
+  contactPersonPhone?: string;
+
+  // Project Value Field
+  @IsNumber()
+  @IsOptional()
+  projectValue?: number;
+
+  // Referral Fields
+  @IsString()
+  @IsOptional()
+  referralBy?: string;
+
+  @IsNumber()
+  @IsOptional()
+  referralAmount?: number;
 }
