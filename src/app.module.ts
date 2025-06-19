@@ -23,6 +23,7 @@ import { VendorModule } from './vendor/vendor.module';
 import { PrintModule } from './print/print.module';
 import { ReferralPaymentsModule } from './referral-payments/referral-payments.module';
 import { AssociatePaymentsModule } from './associate-payments/associate-payments.module';
+import { TeamReportsModule } from './team-reports/team-reports.module';
 
 @Module({
   imports: [
@@ -58,7 +59,8 @@ import { AssociatePaymentsModule } from './associate-payments/associate-payments
     VendorModule,
     PrintModule,
     ReferralPaymentsModule,
-    AssociatePaymentsModule, // This already contains PrintService and PrintController
+    AssociatePaymentsModule,
+    TeamReportsModule, // This already contains PrintService and PrintController
   ],
   controllers: [AppController], // Remove PrintController from here
   providers: [AppService], // Remove PrintService from here

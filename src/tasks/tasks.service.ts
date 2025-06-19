@@ -460,6 +460,24 @@ export class TasksService {
       throw new Error(`Failed to find tasks: ${error.message}`);
     }
   }
+  async findByProjectAndCrew(projectId: string, crewId: string) {
+    try {
+      const projectObjectId = new Types.ObjectId(projectId);
+      const crewObjectId = new Types.ObjectId(crewId);
+      
+      const tasks = await this.taskModel.find({
+        projectId: projectObjectId,
+        assignTo: crewObjectId,  // This matches your schema
+      }).exec();
+      
+      console.log(`Found ${tasks.length} tasks for project ${projectId} and crew ${crewId}`);
+      return tasks;
+    } catch (error) {
+      console.error('Error in findByProjectAndCrew:', error);
+      return [];
+    }
+  }
+  
   async findByFirmAndAssigner(firmId: string, assignerId: string, status?: string) {
     const query: any = {
       firmId: new Types.ObjectId(firmId),

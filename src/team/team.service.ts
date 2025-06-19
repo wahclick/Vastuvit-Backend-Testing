@@ -22,6 +22,8 @@ export class TeamService {
     return this.teamModel.find({ firmId }).exec();
   }
 
+  
+
   async findTeamsByManager(userId: string): Promise<Team[]> {
     // Convert string to ObjectId for manager search
     const objectId = new Types.ObjectId(userId);
@@ -53,7 +55,13 @@ export class TeamService {
   async findTeamById(id: string): Promise<Team> {
     try {
       const objectId = new Types.ObjectId(id);
-      const team = await this.teamModel.findById(objectId).exec();
+      const team = await this.teamModel
+        .findById(objectId)
+        .populate('assigned_members')
+        .populate('team_head')
+        .populate('assigned_projects')
+        .exec();
+      
       if (!team) {
         throw new NotFoundException(`Team with ID ${id} not found`);
       }

@@ -97,6 +97,13 @@ export class TasksController {
       new Types.ObjectId(taskCheckBy),
     );
   }
+  @Get('project/:projectId/crew/:crewId')
+  async findByProjectAndCrew(
+    @Param('projectId') projectId: string,
+    @Param('crewId') crewId: string,
+  ) {
+    return this.tasksService.findByProjectAndCrew(projectId, crewId);
+  }
   @Get('assigned-by/:assignerId')
   findByAssignerAndFirm(
     @Param('assignerId') assignerId: string,
