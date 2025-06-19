@@ -1,0 +1,9 @@
+export enum ProjectStatus {
+  TO_START = 'TO START',
+  IN_PROGRESS = 'IN PROGRESS',
+  BEFORE_TIME = 'BEFORE TIME',
+  DELAYED = 'DELAYED',
+  HOLD = 'HOLD',
+  COMPLETED = 'COMPLETED',
+  ABANDONED = 'ABANDONED',
+}
