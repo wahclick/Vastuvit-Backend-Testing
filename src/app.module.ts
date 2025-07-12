@@ -24,6 +24,13 @@ import { PrintModule } from './print/print.module';
 import { ReferralPaymentsModule } from './referral-payments/referral-payments.module';
 import { AssociatePaymentsModule } from './associate-payments/associate-payments.module';
 import { TeamReportsModule } from './team-reports/team-reports.module';
+import { TransmittalModule } from './transmittal/transmittal.module';
+import { InvoicesModule } from './invoices/invoices.module';
+import { ReceiptsModule } from './receipts/receipts.module';
+import { VouchersModule } from './vouchers/vouchers.module';
+import { ProformaInvoicesModule } from './proforma-invoices/proforma-invoices.module';
+import { BusinessQueryModule } from './business-query/business-query.module';
+
 
 @Module({
   imports: [
@@ -60,7 +67,13 @@ import { TeamReportsModule } from './team-reports/team-reports.module';
     PrintModule,
     ReferralPaymentsModule,
     AssociatePaymentsModule,
-    TeamReportsModule, // This already contains PrintService and PrintController
+    TeamReportsModule,
+    TransmittalModule,
+    InvoicesModule,
+    ReceiptsModule,
+    VouchersModule,
+    ProformaInvoicesModule,
+    BusinessQueryModule, // This already contains PrintService and PrintController
   ],
   controllers: [AppController], // Remove PrintController from here
   providers: [AppService], // Remove PrintService from here

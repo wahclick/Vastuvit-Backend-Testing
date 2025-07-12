@@ -76,6 +76,10 @@ export class UpdateClientDto {
   @IsOptional()
   specificClientRequest?: string;
 
+  @IsString()
+  @IsOptional()
+  gstin?: string;
+
   @IsMongoId()
   @IsOptional()
   firmId?: Types.ObjectId;

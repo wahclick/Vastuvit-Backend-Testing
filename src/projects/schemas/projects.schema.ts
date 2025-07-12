@@ -5,7 +5,6 @@ import { ProjectStatus } from './project-status.enum';
 
 // Measurement schema as a nested document
 
-
 @Schema({ _id: true })
 export class ProjectAssociate {
   @Prop({ type: Types.ObjectId, auto: true })
@@ -164,7 +163,6 @@ export class ProjectDetails {
   updatedAt: Date;
 }
 
-  
 export type ProjectDocument = Project & Document;
 
 @Schema({ timestamps: true })
@@ -251,15 +249,19 @@ export class Project {
   @Prop({ type: [ProjectDetails], default: [] })
   projectDetails: ProjectDetails[];
 
-  @Prop({ type: MongooseSchema.Types.ObjectId, ref: 'Referral', required: false })
+  @Prop({
+    type: MongooseSchema.Types.ObjectId,
+    ref: 'Referral',
+    required: false,
+  })
   referralId: Types.ObjectId;
-  
+
   @Prop({ type: String, required: false })
   referralName: string;
-  
+
   @Prop({ type: Number, required: false, min: 0 })
   referralAmount: number;
-  
+
   @Prop({ type: Number, required: false, min: 0, max: 100 })
   referralPercentage: number;
 
@@ -268,7 +270,6 @@ export class Project {
 
   @Prop({ type: Boolean, default: true })
   isEnabled: boolean;
-  
 }
 
 export const ProjectSchema = SchemaFactory.createForClass(Project);

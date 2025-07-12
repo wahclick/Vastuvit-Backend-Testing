@@ -31,7 +31,7 @@ export class Client {
   @Prop({ type: String, required: true })
   country: string;
 
-  @Prop({ type: String,  })
+  @Prop({ type: String })
   email: string;
 
   @Prop({ type: String, required: true })
@@ -57,6 +57,11 @@ export class Client {
 
   @Prop({ type: String })
   specificClientRequest: string;
+
+  @Prop({
+    type: String,
+  })
+  gstin: string;
 
   @Prop({ type: MongooseSchema.Types.ObjectId, ref: 'Firms', required: true })
   firmId: Types.ObjectId;

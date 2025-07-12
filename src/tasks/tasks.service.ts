@@ -495,4 +495,75 @@ export class TasksService {
       .populate('userId', 'name')
       .exec();
   }
+  async getDrawingDataForProject(projectId: string): Promise<any> {
+    try {
+      console.log('Getting drawing data for project:', projectId);
+      
+      // Find tasks that are completed and approved for the project
+      const tasks = await this.taskModel
+        .find({
+          projectId: new Types.ObjectId(projectId),
+          status: 'completed',
+          remarkStatus: 'approved'
+        })
+        .exec();
+  
+      console.log(`Found ${tasks.length} completed/approved tasks`);
+  
+      if (!tasks || tasks.length === 0) {
+        return {
+          drawingTypes: ['Other'],
+          drawingNumbers: ['Other']
+        };
+      }
+  
+      let drawingTypes = new Set();
+      let drawingNumbers = new Set();
+  
+      tasks.forEach(task => {
+        console.log('Processing task metadata:', task.metadata);
+        
+        if (task.metadata) {
+          try {
+            // Parse the metadata JSON string
+            const metadata = JSON.parse(task.metadata);
+            console.log('Parsed metadata:', metadata);
+            
+            // Extract drawing type/category
+            if (metadata.drawingCategory) {
+              drawingTypes.add(metadata.drawingCategory);
+            }
+            if (metadata.type) {
+              drawingTypes.add(metadata.type);
+            }
+            
+            // Extract drawing number
+            if (metadata.drawingNumber && metadata.drawingNumber !== "NA") {
+              drawingNumbers.add(metadata.drawingNumber);
+            }
+            if (metadata.drawno && metadata.drawno !== "NA") {
+              drawingNumbers.add(metadata.drawno);
+            }
+            
+          } catch (parseError) {
+            console.warn('Error parsing metadata for task:', task._id, parseError);
+          }
+        }
+      });
+  
+      const result = {
+        drawingTypes: [...Array.from(drawingTypes), 'Other'],
+        drawingNumbers: [...Array.from(drawingNumbers), 'Other']
+      };
+  
+      console.log('Final result:', result);
+      return result;
+  
+    } catch (error) {
+      console.error('Error getting drawing data for project:', error);
+      throw new InternalServerErrorException(
+        'Failed to get drawing data: ' + error.message,
+      );
+    }
+  }
 }

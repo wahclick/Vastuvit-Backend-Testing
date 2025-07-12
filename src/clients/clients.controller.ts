@@ -59,6 +59,23 @@ export class ClientsController {
     return this.clientService.toggleEnabled(id);
   }
 
+
+  @Patch('updateGstin/:id')
+  async updateClientGstin(
+    @Param('id') id: string,
+    @Body('gstin') gstin: string
+  ) {
+    // Validate GSTIN format if provided
+    if (gstin && gstin.trim() !== '') {
+
+        
+      
+    
+
+    const updateData: UpdateClientDto = { gstin: gstin || '' };
+    return this.clientService.update(id, updateData);}
+  }
+
   // Route: PATCH /clients/addProjectToClient/:clientId/project/:projectId
   @Patch('addProjectToClient/:clientId/project/:projectId')
   addProjectToClient(

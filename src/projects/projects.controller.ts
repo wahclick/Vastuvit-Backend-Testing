@@ -9,6 +9,7 @@ import {
   Query,
   NotFoundException,
   InternalServerErrorException,
+  BadRequestException,
 } from '@nestjs/common';
 import { ProjectsService } from './projects.service';
 import { CreateProjectDto } from './dto/projects/create-project.dto';
@@ -31,7 +32,16 @@ export class ProjectsController {
   create(@Body() createProjectDto: CreateProjectDto) {
     return this.projectsService.create(createProjectDto);
   }
-
+  @Get('by-firm-with-client')
+  async getProjectsByFirmWithClient(@Query('firmId') firmId: string) {
+    if (!firmId) {
+      throw new BadRequestException('firmId is required');
+    }
+    const projects = await this.projectsService.findAllWithClientData(new Types.ObjectId(firmId));
+    
+    // Force JSON serialization to remove BSON types
+    return JSON.parse(JSON.stringify(projects));
+  }
   @Get()
   findAll(@Query('firmId') firmId: string) {
     return this.projectsService.findAll(new Types.ObjectId(firmId));
@@ -242,4 +252,7 @@ export class ProjectsController {
   async getProjectsByReferral(@Param('referralId') referralId: string) {
     return this.projectsService.findByReferral(referralId);
   }
+
+
+  
 }

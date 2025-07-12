@@ -104,6 +104,12 @@ export class TasksController {
   ) {
     return this.tasksService.findByProjectAndCrew(projectId, crewId);
   }
+
+  @Get('project/:projectId/drawings')
+  async getDrawingDataForProject(@Param('projectId') projectId: string) {
+    return this.tasksService.getDrawingDataForProject(projectId);
+  }
+
   @Get('assigned-by/:assignerId')
   findByAssignerAndFirm(
     @Param('assignerId') assignerId: string,

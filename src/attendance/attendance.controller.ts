@@ -7,6 +7,9 @@ import {
   Patch,
   Param,
   BadRequestException,
+  InternalServerErrorException,
+  HttpStatus,
+  HttpCode,
 } from '@nestjs/common';
 import { AttendanceService } from './attendance.service';
 import { CreateAttendanceDto } from './dto/create-attendance.dto';
@@ -17,36 +20,54 @@ export class AttendanceController {
   constructor(private readonly attendanceService: AttendanceService) {}
 
   @Post()
-  create(@Body() createAttendanceDto: CreateAttendanceDto) {
-    return this.attendanceService.create(createAttendanceDto);
+  @HttpCode(HttpStatus.CREATED)
+  async create(@Body() createAttendanceDto: CreateAttendanceDto) {
+    try {
+      return await this.attendanceService.create(createAttendanceDto);
+    } catch (error) {
+      console.error('Controller - Create attendance error:', error);
+      throw new InternalServerErrorException('Failed to create attendance record');
+    }
   }
 
   @Get('firm/:firmId')
-  findAllByFirm(@Param('firmId') firmId: string) {
-    return this.attendanceService.findAllByFirm(firmId);
+  async findAllByFirm(@Param('firmId') firmId: string) {
+    if (!firmId) {
+      throw new BadRequestException('Firm ID is required');
+    }
+    return await this.attendanceService.findAllByFirm(firmId);
   }
 
   @Get('crew/:crewId')
-  findByCrew(@Param('crewId') crewId: string) {
-    return this.attendanceService.findByCrew(crewId);
+  async findByCrew(@Param('crewId') crewId: string) {
+    if (!crewId) {
+      throw new BadRequestException('Crew ID is required');
+    }
+    return await this.attendanceService.findByCrew(crewId);
   }
 
   @Get('crew/:crewId/firm/:firmId')
-  findByCrewAndFirm(
+  async findByCrewAndFirm(
     @Param('crewId') crewId: string,
     @Param('firmId') firmId: string,
   ) {
-    return this.attendanceService.findByCrewAndFirm(crewId, firmId);
+    if (!crewId || !firmId) {
+      throw new BadRequestException('Both Crew ID and Firm ID are required');
+    }
+    return await this.attendanceService.findByCrewAndFirm(crewId, firmId);
   }
 
   @Patch('crew/:crewId/firm/:firmId/date/:date')
-  update(
+  async update(
     @Param('crewId') crewId: string,
     @Param('firmId') firmId: string,
     @Param('date') date: string,
     @Body() updateAttendanceDto: UpdateAttendanceDto,
   ) {
-    return this.attendanceService.update(
+    if (!crewId || !firmId || !date) {
+      throw new BadRequestException('Crew ID, Firm ID, and Date are required');
+    }
+    return await this.attendanceService.update(
       crewId,
       firmId,
       date,
@@ -55,21 +76,26 @@ export class AttendanceController {
   }
 
   @Get('crew/:crewId/firm/:firmId/month/:year/:month')
-  getMonthlyAttendance(
+  async getMonthlyAttendance(
     @Param('crewId') crewId: string,
     @Param('firmId') firmId: string,
     @Param('year') year: string,
     @Param('month') month: string,
   ) {
-    return this.attendanceService.getMonthlyAttendance(
+    if (!crewId || !firmId || !year || !month) {
+      throw new BadRequestException('All parameters are required');
+    }
+    return await this.attendanceService.getMonthlyAttendance(
       crewId,
       firmId,
       year,
       month,
     );
   }
+
   @Post('clock-in')
-  clockIn(
+  @HttpCode(HttpStatus.CREATED)
+  async clockIn(
     @Body('crewId') crewId: string,
     @Body('firmId') firmId: string,
     @Body('date') date: string,
@@ -77,52 +103,113 @@ export class AttendanceController {
   ) {
     // Validate required parameters
     if (!crewId || !firmId || !date || !time) {
-      throw new BadRequestException('Missing required parameters');
+      throw new BadRequestException('Missing required parameters: crewId, firmId, date, and time are all required');
     }
 
-    // Create a DTO for the attendance record
-    const createDto: CreateAttendanceDto = {
-      crew_id: crewId,
-      firm_id: firmId,
-      date: date,
-      status: 'present',
-      loggedIn: time,
-    };
+    // Validate date format (DD-MM-YYYY)
+    const dateRegex = /^\d{2}-\d{2}-\d{4}$/;
+    if (!dateRegex.test(date)) {
+      throw new BadRequestException('Date must be in DD-MM-YYYY format');
+    }
 
-    return this.attendanceService.create(createDto);
+    // Validate time format (HH:MM:SS)
+    const timeRegex = /^\d{2}:\d{2}:\d{2}$/;
+    if (!timeRegex.test(time)) {
+      throw new BadRequestException('Time must be in HH:MM:SS format');
+    }
+
+    try {
+      console.log('Clock-in request:', { crewId, firmId, date, time });
+      
+      // Create a DTO for the attendance record
+      const createDto: CreateAttendanceDto = {
+        crew_id: crewId,
+        firm_id: firmId,
+        date: date,
+        status: 'present',
+        loggedIn: time,
+      };
+
+      const result = await this.attendanceService.create(createDto);
+      
+      return {
+        success: true,
+        message: 'Clock-in recorded successfully',
+        data: result
+      };
+    } catch (error) {
+      console.error('Clock-in error:', error);
+      throw new InternalServerErrorException(`Failed to record clock-in: ${error.message}`);
+    }
   }
 
   @Post('clock-out')
-  clockOut(
+  @HttpCode(HttpStatus.OK)
+  async clockOut(
     @Body('crewId') crewId: string,
     @Body('firmId') firmId: string,
     @Body('date') date: string,
     @Body('time') time: string,
   ) {
-    return this.attendanceService.clockOut(crewId, firmId, date, time);
+    // Validate required parameters
+    if (!crewId || !firmId || !date || !time) {
+      throw new BadRequestException('Missing required parameters: crewId, firmId, date, and time are all required');
+    }
+
+    // Validate date format (DD-MM-YYYY)
+    const dateRegex = /^\d{2}-\d{2}-\d{4}$/;
+    if (!dateRegex.test(date)) {
+      throw new BadRequestException('Date must be in DD-MM-YYYY format');
+    }
+
+    // Validate time format (HH:MM:SS)
+    const timeRegex = /^\d{2}:\d{2}:\d{2}$/;
+    if (!timeRegex.test(time)) {
+      throw new BadRequestException('Time must be in HH:MM:SS format');
+    }
+
+    try {
+      const result = await this.attendanceService.clockOut(crewId, firmId, date, time);
+      
+      return {
+        success: true,
+        message: 'Clock-out recorded successfully',
+        data: result
+      };
+    } catch (error) {
+      console.error('Clock-out error:', error);
+      throw new InternalServerErrorException(`Failed to record clock-out: ${error.message}`);
+    }
   }
 
   @Get('summary/crew/:crewId/firm/:firmId/:year')
-  getYearlySummary(
+  async getYearlySummary(
     @Param('crewId') crewId: string,
     @Param('firmId') firmId: string,
     @Param('year') year: string,
   ) {
-    return this.attendanceService.getAttendanceSummary(crewId, firmId, year);
+    if (!crewId || !firmId || !year) {
+      throw new BadRequestException('Crew ID, Firm ID, and Year are required');
+    }
+    return await this.attendanceService.getAttendanceSummary(crewId, firmId, year);
   }
 
   @Get('summary/crew/:crewId/firm/:firmId/:year/:month')
-  getMonthlySummary(
+  async getMonthlySummary(
     @Param('crewId') crewId: string,
     @Param('firmId') firmId: string,
     @Param('year') year: string,
     @Param('month') month: string,
   ) {
-    return this.attendanceService.getAttendanceSummary(
+    if (!crewId || !firmId || !year || !month) {
+      throw new BadRequestException('All parameters are required');
+    }
+    return await this.attendanceService.getAttendanceSummary(
       crewId,
       firmId,
       year,
       month,
     );
   }
+  
 }

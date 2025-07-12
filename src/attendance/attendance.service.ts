@@ -83,7 +83,8 @@ export class AttendanceService {
           // Add a new entry
           attendance.history[year][month].push(attendanceRecord);
         }
-
+        attendance.markModified('history');
+        const savedAttendance = await attendance.save();
         return await attendance.save();
       } else {
         // Create a new attendance document
@@ -229,7 +230,8 @@ export class AttendanceService {
         attendance.history[year][month][recordIndex].loggedOut =
           updateAttendanceDto.loggedOut;
       }
-
+      attendance.markModified('history');
+      const savedAttendance = await attendance.save();
       return await attendance.save();
     } catch (error) {
       if (error instanceof NotFoundException) {
@@ -353,7 +355,8 @@ export class AttendanceService {
         // Update the existing record with logout time
         attendance.history[year][month][recordIndex].loggedOut = time;
       }
-
+      attendance.markModified('history');
+      const savedAttendance = await attendance.save();
       return await attendance.save();
     } catch (error) {
       if (error instanceof NotFoundException) {

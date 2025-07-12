@@ -933,6 +933,58 @@ export class ProjectsService {
       );
     }
   }
+
+  // Replace your findAllWithClientData method with this fixed version:
+
+ 
+async findAllWithClientData(firmId: Types.ObjectId | string): Promise<any[]> {
+  try {
+    const projects = await this.projectModel
+      .find({ firmId })
+      .populate('userId')
+      .populate('clientId')
+      .lean() // This is crucial - converts to plain JS objects
+      .exec();
+
+    return projects.map((project: any) => ({
+      id: project._id.toString(),
+      client: project.clientId?.name || '',
+      label: project.name,
+      value: project.name,
+      code: project.projectCode || '',
+      address: project.address || '',
+      projectCategory: project.projectCategory,
+      projectType: project.projectType,
+      totalBudget: project.totalBudget,
+      designFee: project.designFee,
+      startDate: project.startDate,
+      endDate: project.endDate,
+      status: project.status,
+      state: project.state,
+      city: project.city,
+      country: project.country,
+      // Add the measurement fields you need
+      plotAreaMeter: project.measurementMetric?.plotArea || 0,
+      plotAreaFeet: project.measurementImperial?.plotArea || 0,
+      coveredAreaMeter: project.measurementMetric?.builtCovered || 0,
+      coveredAreaFeet: project.measurementImperial?.builtCovered || 0,
+      plinthAreaMeter: project.measurementMetric?.builtPlinth || 0,
+      plinthAreaFeet: project.measurementImperial?.builtPlinth || 0,
+      clientData: project.clientId ? {
+        id: project.clientId._id?.toString(),
+        name: project.clientId.name,
+        address: project.clientId.address,
+        city: project.clientId.city,
+        state: project.clientId.state,
+        country: project.clientId.country,
+        email: project.clientId.email,
+        mobileNumber: project.clientId.mobileNumber,
+      } : null,
+    }));
+  } catch (error) {
+    throw new InternalServerErrorException('Failed to find projects: ' + error.message);
+  }
+}
   async getProjectReferral(projectId: string) {
     const project = await this.projectModel
       .findById(projectId)
@@ -941,17 +993,18 @@ export class ProjectsService {
         'fullName email telephone referralAmount referralPercentage',
       )
       .exec();
-
+  
     if (!project) {
       throw new NotFoundException(`Project with ID ${projectId} not found`);
     }
-
+  
     return {
       projectId: project._id,
       projectName: project.name,
       referral: project.referralId || null,
     };
   }
+  
   async findByReferral(referralId: string) {
     try {
       const projects = await this.projectModel
@@ -962,7 +1015,7 @@ export class ProjectsService {
         .populate('clientId', 'name email')
         .populate('referralId', 'fullName referralPercentage')
         .exec();
-
+  
       return projects;
     } catch (error) {
       throw new NotFoundException(

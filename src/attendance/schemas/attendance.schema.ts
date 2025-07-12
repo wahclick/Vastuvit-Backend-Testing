@@ -39,7 +39,7 @@ export class Attendance {
   crew_id: Types.ObjectId;
 
   @Prop({
-    type: Object,
+    type: MongooseSchema.Types.Mixed, 
     default: {},
   })
   history: AttendanceHistory;

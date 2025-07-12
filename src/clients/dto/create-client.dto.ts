@@ -76,6 +76,10 @@ export class CreateClientDto {
   @IsOptional()
   specificClientRequest?: string;
 
+  @IsString()
+  @IsOptional()
+  gstin?: string;
+  
   @IsMongoId()
   @IsNotEmpty()
   firmId: Types.ObjectId;
