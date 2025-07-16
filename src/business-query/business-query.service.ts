@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
+import { Model, Types } from 'mongoose';
 import { CreateBusinessQueryDto } from './dto/create-business-query.dto';
 import { BusinessQuery, BusinessQueryDocument } from './schema/business-query.schema';
 import { UpdateBusinessQueryDto } from './dto/update-business-query.dto';

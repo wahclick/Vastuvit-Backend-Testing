@@ -253,8 +253,16 @@ export class Project {
     type: MongooseSchema.Types.ObjectId,
     ref: 'Referral',
     required: false,
+    default: null, // Set default to null instead of undefined
+    validate: {
+      validator: function(value: any) {
+        // Allow null, undefined, or valid ObjectId
+        return value === null || value === undefined || Types.ObjectId.isValid(value);
+      },
+      message: 'referralId must be a valid ObjectId or null'
+    }
   })
-  referralId: Types.ObjectId;
+  referralId: Types.ObjectId | null;
 
   @Prop({ type: String, required: false })
   referralName: string;

@@ -40,13 +40,11 @@ export class AccountingController {
     if (!startDate && !endDate) {
       return this.accountingService.findAll(firmId);
     }
-
     const statusArray = status
       ? status.split(',').map((s) => s.trim())
       : undefined;
     const start = startDate ? new Date(startDate) : new Date();
     const end = endDate ? new Date(endDate) : new Date();
-
     return this.accountingService.findByFirmAndDateRange(
       firmId,
       start,
@@ -54,10 +52,32 @@ export class AccountingController {
       statusArray,
     );
   }
-
+  @Get('debug/:projectId')
+  async debugProjectQuery(@Param('projectId') projectId: string) {
+    return this.accountingService.debugProjectQuery(projectId);
+  }
+  // FIXED: Add query parameters to project endpoint
   @Get('project/:projectId')
-  async getAccountingRecordsByProject(@Param('projectId') projectId: string) {
-    return this.accountingService.findByProject(projectId);
+  async getAccountingRecordsByProject(
+    @Param('projectId') projectId: string,
+    @Query('paymentType') paymentType?: string,
+    @Query('expenseType') expenseType?: string,
+    @Query('status') status?: string,
+    @Query('startDate') startDate?: string,
+    @Query('endDate') endDate?: string,
+  ) {
+    console.log('Query params:', { paymentType, expenseType, status, startDate, endDate });
+    
+    // Create filter object
+    const filters = {
+      paymentType,
+      expenseType,
+      status,
+      startDate: startDate ? new Date(startDate) : undefined,
+      endDate: endDate ? new Date(endDate) : undefined,
+    };
+    
+    return this.accountingService.findByProjectWithFilters(projectId, filters);
   }
 
   // GENERIC ROUTES LAST - this catches any other :id patterns
